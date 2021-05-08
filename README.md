@@ -84,5 +84,5 @@ As we can see, with the 32mm tag turned on, in the exlusion filter the jersey-ba
 ## Bugs and known limitations
 You can find the link to all bugs, and feature request here [https://github.com/ChrisSippel/Local3DModelRepository/issues] but the following are the major known bugs/limitations of the tool and how to get around them
 
-* L3MR doesn't know when files are added or removed from my selected folder [https://github.com/ChrisSippel/Local3DModelRepository/issues/2]
-   * The only known way around this is to re-select your folder by using the Open Folder button. *However* this will create a cause a complete refresh of L3MR and you will lose all of your tags and the tags you have assigned to your models
+* L3MR doesn't know when files are added or removed from my selected folder https://github.com/ChrisSippel/Local3DModelRepository/issues/2
+   * The only known way around this is to re-select your folder by using the Open Folder button. *However* this will cause a complete refresh of L3MR and you will lose all of your tags and the tags you have assigned to your models
