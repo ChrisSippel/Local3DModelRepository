@@ -1,0 +1,12 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="LightGrey">#cccccc</Color>
+    <Color x:Key="MediumGrey">#bbbbbb</Color>
+    <Color x:Key="DarkGrey">#aaaaaa</Color>
+
+    <SolidColorBrush x:Key="ButtonBackground" Color="{StaticResource DarkGrey}" />
+    <SolidColorBrush x:Key="PreviewerBackground" Color="{StaticResource LightGrey}" />
+    <SolidColorBrush x:Key="PreviewerBackgroundLoading" Color="{StaticResource DarkGrey}" />
+
+</ResourceDictionary>
