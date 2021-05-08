@@ -12,6 +12,7 @@ A UI tool for managing all of our 3D models
       2. [Tags](#Tags)
          1. [Inclusive Filters](#InclusiveFilters)
          2. [Exclusive Filters](#ExlusiveFilters)
+4. [Known bugs/limitations](#BugsAndKnownLimitations)
 
 ## Purpose
 The purpose of Local3dModelRepository (L3MR or lemur) is to make your life eaiser. As your collection of models expand, your method of tracking becomes more and more convaluded. The goal of L3MR is to give you a single application that can keep track of all of the information about your models!
@@ -77,3 +78,11 @@ As we can see, we only show the models with the 32mm tag assigned to them, once 
 If you would like to remove any models from your list, you can use the Tags to exlude in filter drop down, which is to the right of the Tags to require in filter drop down. The exclude filter acts much like the include filter, but instead of only showing models with a specific set of tags, it excludes all models with any of the selected tags.
 ![image](https://user-images.githubusercontent.com/6963296/117553230-4353b980-b01e-11eb-8f07-e255032ab393.png)
 As we can see, with the 32mm tag turned on, in the exlusion filter the jersey-barrier is no longer in my list of available models
+
+<a name="BugsAndKnownLimitations" />
+
+## Bugs and known limitations
+You can find the link to all bugs, and feature request here [https://github.com/ChrisSippel/Local3DModelRepository/issues] but the following are the major known bugs/limitations of the tool and how to get around them
+
+* L3MR doesn't know when files are added or removed from my selected folder [https://github.com/ChrisSippel/Local3DModelRepository/issues/2]
+   * The only known way around this is to re-select your folder by using the Open Folder button. *However* this will create a cause a complete refresh of L3MR and you will lose all of your tags and the tags you have assigned to your models
