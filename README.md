@@ -6,6 +6,11 @@ A UI tool for managing all of our 3D models
 2. [Notes](#Notes)
 3. [Usage](#Usage)
   1. [Requirements](#Requirements)
+  2. [Installation](#Installation)
+4. [Using the tool](#UsingTheTool)
+  1. [Getting Started](#GettingStarted)
+  2. [Tags](#Tags)
+
 
 ## Purpose
 The purpose of Local3dModelRepository (L3MR or lemur) is to make your life eaiser. As your collection of models exands, your method of tracking becomes more and more convaluded. The goal of Local3dModelRepository is to give you a single application that can keep track of all of the information about your models!
@@ -25,7 +30,9 @@ Operating System: Windows 7+
 1. Download the latest version of the tool. You can find find all releases of L3MR here <https://github.com/ChrisSippel/Local3DModelRepository/releases/>
 2. Extract the .zip to a location you'll remember
 
+<a name="UsingTheTool" />
 ### Using the tool
+<a name="GettingStarted" />
 #### Getting Started
 1. Start the tool by double clicking the Local3DModelRepository.exe file. The following window will appear.
 ![image](https://user-images.githubusercontent.com/6963296/117552417-1d77e600-b019-11eb-8dab-f8f25825ec1a.png)
