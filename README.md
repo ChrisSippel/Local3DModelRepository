@@ -3,6 +3,9 @@ A UI tool for managing all of our 3D models
 
 ## Table of contents
 1. [Purpose](#Purpose)
+2. [Notes](#Notes)
+3. [Usage](#Usage)
+  1. [Requirements](#Requirements)
 
 ## Purpose
 The purpose of Local3dModelRepository (L3MR or lemur) is to make your life eaiser. As your collection of models exands, your method of tracking becomes more and more convaluded. The goal of Local3dModelRepository is to give you a single application that can keep track of all of the information about your models!
