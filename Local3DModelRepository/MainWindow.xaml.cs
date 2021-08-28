@@ -15,6 +15,19 @@ namespace Local3DModelRepository
 
             DataContext = mainWindowViewModel;
             mainWindowViewModel.SelectedModelChanged += MainWindowViewModel_SelectedModelChanged;
+
+            Loaded += MainWindow_Loaded;
+            Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            await ((MainWindowViewModel)DataContext).LoadExistingModelRespositories();
         }
 
         private void MainWindowViewModel_SelectedModelChanged(object sender, EventArgs e)

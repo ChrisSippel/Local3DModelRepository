@@ -6,14 +6,19 @@ namespace Local3DModelRepository.Models
 {
     public sealed class Model : IModel, IEquatable<IModel>
     {
-        private readonly List<Tag> _tags;
+        private readonly List<ITag> _tags;
 
         public Model(string fullPath)
+            : this(fullPath, Path.GetFileName(fullPath), new List<ITag>())
         {
-            _tags = new List<Tag>();
+        }
+
+        public Model(string fullPath, string fileName, List<ITag> tags)
+        {
+            _tags = tags;
 
             FullPath = fullPath;
-            FileName = Path.GetFileName(fullPath);
+            FileName = fileName;
             Tags = _tags;
         }
 
@@ -21,7 +26,7 @@ namespace Local3DModelRepository.Models
 
         public string FileName { get; }
 
-        public List<Tag> Tags { get; }
+        public List<ITag> Tags { get; }
 
         public bool Equals(IModel other)
         {
@@ -31,7 +36,7 @@ namespace Local3DModelRepository.Models
 
         public override int GetHashCode()
         {
-            return (FullPath).GetHashCode();
+            return FullPath.GetHashCode();
         }
     }
 }

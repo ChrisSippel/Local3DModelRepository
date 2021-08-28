@@ -1,16 +1,11 @@
-﻿using System.Collections.Generic;
-using Local3DModelRepository.Models;
+﻿using Optional;
 
 namespace Local3DModelRepository.DataStorage
 {
     public interface IStorageModule
     {
-        IReadOnlyCollection<IModel> LoadedModels { get; }
+        Option<IModelRepositoryCollection> Load();
 
-        void Initialize();
-
-        void LoadAllModels(string folderPath);
-
-        void SaveAllModels();
+        void Save(IModelRepositoryCollection modelRepositoryCollection);
     }
 }

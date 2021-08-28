@@ -3,8 +3,10 @@ using Local3DModelRepository.Models;
 
 namespace Local3DModelRepository.DataStorage.Json
 {
-    public sealed class ModelsCollection
+    public sealed class MutableModelsRepository
     {
+        public string DirectoryPath { get; set; }
+
         public IEnumerable<Tag> Tags { get; set; }
 
         public IEnumerable<Model> Models { get; set; }

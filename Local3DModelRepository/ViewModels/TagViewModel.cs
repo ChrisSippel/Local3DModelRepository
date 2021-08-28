@@ -4,13 +4,13 @@ namespace Local3DModelRepository.ViewModels
 {
     public sealed class TagViewModel
     {
-        public TagViewModel(Tag tag)
+        public TagViewModel(ITag tag)
         {
             Tag = tag;
             DisplayText = tag.Value;
         }
 
-        public Tag Tag { get; }
+        public ITag Tag { get; }
 
         public string DisplayText { get; }
     }

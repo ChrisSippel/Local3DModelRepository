@@ -1,6 +1,10 @@
 ﻿using System.Windows;
+using Local3DModelRepository.DataLoaders;
 using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.DataStorage.Json;
+using Local3DModelRepository.FileSystemAccess;
+using Local3DModelRepository.Models;
+using Local3DModelRepository.UiTools;
 using Local3DModelRepository.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,9 +27,21 @@ namespace Local3DModelRepository
 
         private void AddFeaturesToServiceCollection(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddSingleton<IStorageModule>(new JsonStorageModule("Storage.json"));
+            var modelFactory = new ModelFactory();
+            var fileWrapper = new FileWrapper();
+            var jsonSerializerWrapper = new JsonSerializationWrapper();
+
+            var jsonStoragerModule = new JsonStorageModule("Storage.json", fileWrapper, jsonSerializerWrapper);
+
+            serviceCollection.AddSingleton<IDirectoryWrapper, DirectoryWrapper>();
+            serviceCollection.AddSingleton<IJsonSeralizerWrapper>(jsonSerializerWrapper);
+            serviceCollection.AddSingleton<IFileWrapper>(fileWrapper);
+            serviceCollection.AddSingleton<IStorageModule>(jsonStoragerModule);
+            serviceCollection.AddSingleton<IModelsLoader, ModelsLoader>();
             serviceCollection.AddSingleton<MainWindowViewModel>();
             serviceCollection.AddSingleton<MainWindow>();
+            serviceCollection.AddSingleton<IModelFactory>(modelFactory);
+            serviceCollection.AddSingleton<IDialogService, DialogService>();
         }
 
         protected override void OnStartup(StartupEventArgs e)

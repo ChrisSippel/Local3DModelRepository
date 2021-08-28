@@ -2,68 +2,88 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Local3DModelRepository.DataLoaders;
+using Local3DModelRepository.FileSystemAccess;
 using Local3DModelRepository.Models;
 using Newtonsoft.Json;
+using Optional;
 
 namespace Local3DModelRepository.DataStorage.Json
 {
     public sealed class JsonStorageModule : IStorageModule
     {
         private readonly string _filePath;
-        private readonly HashSet<IModel> _loadedModels;
+        private readonly IFileWrapper _fileWrapper;
+        private readonly IJsonSeralizerWrapper _jsonSeralizerWrapper;
 
-        public JsonStorageModule(string filePath)
+        public JsonStorageModule(
+            string filePath,
+            IFileWrapper fileWrapper,
+            IJsonSeralizerWrapper jsonSeralizerWrapper)
         {
             _filePath = filePath;
-            _loadedModels = new HashSet<IModel>();
-
-            LoadedModels = _loadedModels;
+            _fileWrapper = fileWrapper;
+            _jsonSeralizerWrapper = jsonSeralizerWrapper;
         }
 
-        public IReadOnlyCollection<IModel> LoadedModels { get; }
-
-        public void Initialize()
+        public Option<IModelRepositoryCollection> Load()
         {
-            if (!File.Exists(_filePath))
+            if (!_fileWrapper.Exists(_filePath))
             {
-                return;
+                return Option.None<IModelRepositoryCollection>();
             }
 
-            var serializer = new JsonSerializer();
-            using var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read);
-            using var streamReader = new StreamReader(fileStream);
-            var jsonTextReader = new JsonTextReader(streamReader);
-            var modelsCollection = serializer.Deserialize<ModelsCollection>(jsonTextReader);
-            _loadedModels.UnionWith(modelsCollection.Models);
+            try
+            {
+                var modelRepositoryCollection =
+                    _jsonSeralizerWrapper.DeserializeFromFile<IModelRepositoryCollection>(_filePath);
+                return Option.Some(modelRepositoryCollection);
+            }
+            catch (JsonSerializationException)
+            {
+                return Option.None<IModelRepositoryCollection>();
+            }
         }
 
-        public void LoadAllModels(string folderPath)
+        public void Save(IModelRepositoryCollection modelRepositoryCollection)
         {
-            var allStlFiles = Directory.GetFiles(folderPath, "*.stl", SearchOption.AllDirectories);
-
-            var modelsList = new List<Model>(allStlFiles.Length);
-            Array.ForEach(allStlFiles, (string filePath) => { modelsList.Add(new Model(filePath)); });
-
-            var modelsCollection = new ModelsCollection();
-            modelsCollection.Models = modelsList;
-
-            using var fileStream = File.Create(_filePath);
-            using var streamWriter = new StreamWriter(fileStream);
-            var serializer = new JsonSerializer();
-            serializer.Serialize(streamWriter, modelsCollection);
-
-            _loadedModels.UnionWith(modelsList);
-        }
-
-        public void SaveAllModels()
-        {
-            var modelsCollection = new ModelsCollection();
-            modelsCollection.Models = LoadedModels.Select(x => x as Model);
+            /*
+            var modelsCollection = new MutableModelsRepository();
+            ////modelsCollection.Models = Models.Select(x => x as Model);
 
             using var fileStream = File.OpenWrite(_filePath);
             using var streamWriter = new StreamWriter(fileStream);
             var serializer = new JsonSerializer();
             serializer.Serialize(streamWriter, modelsCollection);
+            */
+        }
+
+        public void Save(string repositoryName, IEnumerable<IModel> models)
+        {
+            /*
+            var modelsRepository = new ModelRepository(repositoryName, Enumerable.Empty<ITag>(), models);
+            using var fileStream = File.OpenWrite(_filePath);
+            using var streamWriter = new StreamWriter(fileStream);
+            var serializer = new JsonSerializer();
+            serializer.Serialize(streamWriter, modelsRepository);
+            */
+        }
+
+        private IModelRepository LoadModelsCollectionFromFile()
+        {
+            /*
+            var serializerSettings = new JsonSerializerSettings
+            {
+                Converters = { new ModelRepositoryJsonConverter() },
+            };
+
+            var serializer = JsonSerializer.Create(serializerSettings);
+            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            using var streamReader = new StreamReader(fileStream);
+            var jsonTextReader = new JsonTextReader(streamReader);
+            return serializer.Deserialize<ModelRepository>(jsonTextReader);
+            */
+            return null;
         }
     }
 }

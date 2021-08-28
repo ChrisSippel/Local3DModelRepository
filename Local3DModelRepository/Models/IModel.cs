@@ -8,6 +8,6 @@ namespace Local3DModelRepository.Models
 
         string FullPath { get; }
 
-        List<Tag> Tags { get; }
+        List<ITag> Tags { get; }
     }
 }

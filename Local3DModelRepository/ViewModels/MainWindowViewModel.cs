@@ -9,12 +9,15 @@ using System.Windows.Input;
 using System.Windows.Media.Media3D;
 using HelixToolkit.Wpf;
 using Local3DModelRepository.Controls;
+using Local3DModelRepository.DataLoaders;
 using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.ExtensionMethods;
 using Local3DModelRepository.Models;
+using Local3DModelRepository.UiTools;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
-using Ookii.Dialogs.Wpf;
+using Optional;
+using Optional.Unsafe;
 
 namespace Local3DModelRepository.ViewModels
 {
@@ -24,21 +27,28 @@ namespace Local3DModelRepository.ViewModels
 
         private readonly IStorageModule _storageModule;
         private readonly ModelImporter _modelImporter;
+        private readonly IModelsLoader _modelsLoader;
+        private readonly IDialogService _dialogService;
 
         private Model3DGroup _selectedModel;
         private bool _isLoading;
         private IEnumerable<TagFilterViewModel> _includeFilterTags;
         private IEnumerable<TagFilterViewModel> _excludeFilterTags;
 
-        public MainWindowViewModel(IStorageModule storageModule)
+        public MainWindowViewModel(
+            IStorageModule storageModule,
+            IModelsLoader modelsLoader,
+            IDialogService dialogService)
         {
             _storageModule = storageModule;
+            _modelsLoader = modelsLoader;
+            _dialogService = dialogService;
 
             _isLoading = false;
             _modelImporter = new ModelImporter();
 
-            OpenFolderCommand = new AsyncRelayCommand(SelectFolder);
-            SelectionChangedCommand = new AsyncRelayCommand<ModelViewModel>(LoadModel);
+            OpenFolderCommand = new RelayCommand(LoadModelsFromFolder);
+            SelectionChangedCommand = new AsyncRelayCommand<ModelViewModel>(DisplaySelectedModel);
             AddTagsCommand = new RelayCommand(AddTagsToModel, () => !IsLoading && SelectedModel != null);
             RemoveTagsCommand = new RelayCommand<object>(RemoveTagsFromModel, (object o) => SelectedModel != null);
             IncludeFilterChanged = new RelayCommand(IncludeFilterTagsChangedImpl);
@@ -47,10 +57,7 @@ namespace Local3DModelRepository.ViewModels
             ModelViewModels = new ObservableCollection<ModelViewModel>();
             TagViewModels = new ObservableCollection<TagViewModel>();
 
-            _storageModule.Initialize();
-            _storageModule.LoadedModels.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
-
-            _includeFilterTags = _storageModule.LoadedModels
+            /*_includeFilterTags = _storageModule.Models
                 .SelectMany(x => x.Tags)
                 .Distinct()
                 .OrderBy(x => x.Value)
@@ -58,17 +65,18 @@ namespace Local3DModelRepository.ViewModels
                 .Prepend(IncludeAllTagFilterViewModel)
                 .ToArray();
 
-            _excludeFilterTags = _storageModule.LoadedModels
+            _excludeFilterTags = _storageModule.Models
                 .SelectMany(x => x.Tags)
                 .Distinct()
                 .OrderBy(x => x.Value)
                 .Select(x => new TagFilterViewModel(x))
                 .ToArray();
+            */
         }
 
         public event EventHandler SelectedModelChanged;
 
-        public AsyncRelayCommand OpenFolderCommand { get; }
+        public RelayCommand OpenFolderCommand { get; }
 
         public ICommand ExitApplicationCommand { get; }
 
@@ -152,44 +160,78 @@ namespace Local3DModelRepository.ViewModels
             }
         }
 
-        private async Task SelectFolder()
+        public async Task LoadExistingModelRespositories()
         {
-            var folderBrowserDialog = new VistaFolderBrowserDialog();
+            IsLoading = true;
 
-            var result = folderBrowserDialog.ShowDialog();
-            if (!result.HasValue ||
-                !result.Value)
+            try
+            {
+                var modelRepositoryCollection = Option.None<IModelRepositoryCollection>();
+                await Task.Run(() => modelRepositoryCollection = _storageModule.Load());
+
+                if (!modelRepositoryCollection.HasValue)
+                {
+                    IsLoading = false;
+                    return;
+                }
+
+                var existingModelRepositoryCollection = modelRepositoryCollection.ValueOrFailure();
+                foreach (var modelRepository in existingModelRepositoryCollection.ModelRepositories)
+                {
+                    var modelViewModels = modelRepository.Models.Select(x => new ModelViewModel(x)).ToArray();
+                    modelViewModels.ForEach(x => ModelViewModels.Add(x));
+                }
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        public async Task SaveModelRepositories()
+        {
+            // Make if file doesn't exist
+            // blind overwrite otherwise
+
+            // Create IModelRepositoryCollection object
+            // using the tags and models we have access to
+
+            // Serialize object to file
+        }
+
+        private void LoadModelsFromFolder()
+        {
+            var userSelectedFolder = _dialogService.HaveUserSelectFolder();
+            if (!userSelectedFolder.HasValue)
             {
                 return;
             }
 
             ModelViewModels.Clear();
 
-            await Task.Run(() =>
-            {
-                _storageModule.LoadAllModels(folderBrowserDialog.SelectedPath);
-            });
-
-            _storageModule.LoadedModels.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
+            var loadedModels = _modelsLoader.LoadAllModels(userSelectedFolder.ValueOrFailure());
+            loadedModels.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
         }
 
-        private async Task LoadModel(ModelViewModel modelViewModel)
+        private async Task DisplaySelectedModel(ModelViewModel modelViewModel)
         {
+            if (modelViewModel == null)
+            {
+                SelectedModel = null;
+                return;
+            }
+
             IsLoading = true;
-            SelectedModel = null;
 
             try
             {
-                if (modelViewModel != null)
+                await Task.Run(() =>
                 {
-                    await Task.Run(() =>
-                    {
-                        Model3DGroup loadedModel = _modelImporter.Load(modelViewModel.Model.FullPath);
-                        loadedModel.Freeze();
+                    Model3DGroup loadedModel = _modelImporter.Load(modelViewModel.Model.FullPath);
+                    loadedModel.Freeze();
 
-                        Application.Current.Dispatcher.Invoke(() => SelectedModel = loadedModel);
-                    });
-                }
+                    Application.Current.Dispatcher.Invoke(() => SelectedModel = loadedModel);
+                });
             }
             finally
             {
@@ -199,6 +241,7 @@ namespace Local3DModelRepository.ViewModels
 
         private void AddTagsToModel()
         {
+            /*
             var viewModel = new TagsWindowViewModel(ModelViewModels.SelectMany(x => x.Model.Tags), SelectedModelViewModel.Model.Tags);
             var tagsWindow = new TagsWindow(viewModel);
             tagsWindow.ShowDialog();
@@ -222,11 +265,12 @@ namespace Local3DModelRepository.ViewModels
                     }
                 });
 
-                _storageModule.SaveAllModels();
+                ////_storageModule.Save();
             }
+            */
 
-            IncludeFilterTags = _storageModule.LoadedModels.SelectMany(x => x.Tags).Distinct().OrderBy(x => x.Value).Select(x => new TagFilterViewModel(x)).ToArray();
-            ExcludeFilterTags = _storageModule.LoadedModels.SelectMany(x => x.Tags).Distinct().OrderBy(x => x.Value).Select(x => new TagFilterViewModel(x)).ToArray();
+            ////IncludeFilterTags = _storageModule.Models.SelectMany(x => x.Tags).Distinct().OrderBy(x => x.Value).Select(x => new TagFilterViewModel(x)).ToArray();
+            ////ExcludeFilterTags = _storageModule.Models.SelectMany(x => x.Tags).Distinct().OrderBy(x => x.Value).Select(x => new TagFilterViewModel(x)).ToArray();
         }
 
         private void RemoveTagsFromModel(object tagsAsObjects)
@@ -243,19 +287,20 @@ namespace Local3DModelRepository.ViewModels
                 TagViewModels.Remove(tagViewModel);
             }
 
-            _storageModule.SaveAllModels();
+            ////_storageModule.Save();
 
-            IncludeFilterTags = _storageModule.LoadedModels
+            /*IncludeFilterTags = _storageModule.Models
                 .SelectMany(x => x.Tags)
                 .Distinct()
                 .OrderBy(x => x.Value)
                 .Select(x => new TagFilterViewModel(x))
                 .Prepend(IncludeAllTagFilterViewModel)
-                .ToArray();
+                .ToArray();*/
         }
 
         private void IncludeFilterTagsChangedImpl()
         {
+            /*
             ModelViewModels.Clear();
 
             var filtersToEnforce = IncludeFilterTags.Where(x => x.IsChecked);
@@ -264,7 +309,7 @@ namespace Local3DModelRepository.ViewModels
                  filtersToEnforce.First().Equals(IncludeAllTagFilterViewModel)))
             {
                 IncludeAllTagFilterViewModel.IsChecked = true;
-                IncludeFilterTags = _storageModule.LoadedModels
+                IncludeFilterTags = _storageModule.Models
                     .SelectMany(x => x.Tags)
                     .Distinct()
                     .OrderBy(x => x.Value)
@@ -272,7 +317,7 @@ namespace Local3DModelRepository.ViewModels
                     .Prepend(IncludeAllTagFilterViewModel)
                     .ToArray();
 
-                _storageModule.LoadedModels.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
+                _storageModule.Models.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
                 return;
             }
             else if (filtersToEnforce.Count() > 1)
@@ -283,7 +328,7 @@ namespace Local3DModelRepository.ViewModels
             var modelsToDisplayHashSet = new HashSet<IModel>();
             foreach (var filterToEnforce in filtersToEnforce)
             {
-                var modelsToDisplay = _storageModule.LoadedModels.Where(x => !modelsToDisplayHashSet.Contains(x) && x.Tags.Contains(filterToEnforce.Tag));
+                var modelsToDisplay = _storageModule.Models.Where(x => !modelsToDisplayHashSet.Contains(x) && x.Tags.Contains(filterToEnforce.Tag));
                 foreach (var modelToDisplay in modelsToDisplay)
                 {
                     modelsToDisplayHashSet.Add(modelToDisplay);
@@ -291,12 +336,14 @@ namespace Local3DModelRepository.ViewModels
             }
 
             modelsToDisplayHashSet.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
+            */
         }
 
         private void ExcludeFilterTagsChangedImpl()
         {
+            /*
             ModelViewModels.Clear();
-            _storageModule.LoadedModels.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
+            _storageModule.Models.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
 
             var filtersToEnforce = ExcludeFilterTags.Where(x => x.IsChecked);
             var modelViewModelsToRemove = new HashSet<ModelViewModel>();
@@ -311,6 +358,7 @@ namespace Local3DModelRepository.ViewModels
             {
                 ModelViewModels.Remove(modelToRemove);
             }
+            */
         }
     }
 }
