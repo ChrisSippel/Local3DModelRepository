@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.DataStorage.Json;
 using Local3DModelRepository.FileSystemAccess;
@@ -76,6 +79,30 @@ namespace Local3DModelRepository.Tests
             var result = jsonStorageModule.Load();
 
             Assert.True(result.HasValue);
+        }
+
+        [Fact]
+        public async ValueTask Save_SavingIsSuccessful()
+        {
+            const string SerializedString = "NotARealJsonObject";
+
+            var objectToSave = _mockRepository.Create<IModelRepositoryCollection>();
+
+            var stream = _mockRepository.Create<IStreamWrapper>();
+            stream
+                .Setup(x => x.WriteAsync(It.IsAny<ReadOnlyMemory<byte>>(), CancellationToken.None))
+                .Returns(ValueTask.CompletedTask);
+
+            _fileWrapper
+                .Setup(x => x.Create(FilePath))
+                .Returns(stream.Object);
+
+            _jsonSeralizerWrapper
+                .Setup(x => x.Serialize(objectToSave.Object))
+                .Returns(SerializedString);
+
+            var jsonStorageModule = CreateJsonStorageModule();
+            await jsonStorageModule.Save(objectToSave.Object);
         }
 
         private JsonStorageModule CreateJsonStorageModule()

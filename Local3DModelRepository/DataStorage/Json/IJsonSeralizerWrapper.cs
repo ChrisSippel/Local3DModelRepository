@@ -3,5 +3,7 @@
     public interface IJsonSeralizerWrapper
     {
         T DeserializeFromFile<T>(string filePath);
+
+        string Serialize(object? objectToSerialze);
     }
 }

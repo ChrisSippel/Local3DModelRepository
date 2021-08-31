@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Media3D;
 using HelixToolkit.Wpf;
-using Local3DModelRepository.Controls;
 using Local3DModelRepository.DataLoaders;
 using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.ExtensionMethods;
@@ -35,6 +34,8 @@ namespace Local3DModelRepository.ViewModels
         private IEnumerable<TagFilterViewModel> _includeFilterTags;
         private IEnumerable<TagFilterViewModel> _excludeFilterTags;
 
+        private IModelRepositoryCollection _modelRepositoryCollection;
+
         public MainWindowViewModel(
             IStorageModule storageModule,
             IModelsLoader modelsLoader,
@@ -46,6 +47,7 @@ namespace Local3DModelRepository.ViewModels
 
             _isLoading = false;
             _modelImporter = new ModelImporter();
+            _modelRepositoryCollection = new ModelRepositoryCollection();
 
             OpenFolderCommand = new RelayCommand(LoadModelsFromFolder);
             SelectionChangedCommand = new AsyncRelayCommand<ModelViewModel>(DisplaySelectedModel);
@@ -160,7 +162,7 @@ namespace Local3DModelRepository.ViewModels
             }
         }
 
-        public async Task LoadExistingModelRespositories()
+        public async Task LoadModelRespositoriesFromStorage()
         {
             IsLoading = true;
 
@@ -175,8 +177,8 @@ namespace Local3DModelRepository.ViewModels
                     return;
                 }
 
-                var existingModelRepositoryCollection = modelRepositoryCollection.ValueOrFailure();
-                foreach (var modelRepository in existingModelRepositoryCollection.ModelRepositories)
+                _modelRepositoryCollection = modelRepositoryCollection.ValueOrFailure();
+                foreach (var modelRepository in _modelRepositoryCollection.ModelRepositories)
                 {
                     var modelViewModels = modelRepository.Models.Select(x => new ModelViewModel(x)).ToArray();
                     modelViewModels.ForEach(x => ModelViewModels.Add(x));
@@ -188,15 +190,17 @@ namespace Local3DModelRepository.ViewModels
             }
         }
 
-        public async Task SaveModelRepositories()
+        public async ValueTask SaveModelRepositoriesToStorage()
         {
-            // Make if file doesn't exist
-            // blind overwrite otherwise
-
-            // Create IModelRepositoryCollection object
-            // using the tags and models we have access to
-
-            // Serialize object to file
+            try
+            {
+                IsLoading = true;
+                await _storageModule.Save(_modelRepositoryCollection);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         private void LoadModelsFromFolder()
@@ -207,10 +211,22 @@ namespace Local3DModelRepository.ViewModels
                 return;
             }
 
+            var userSelectedFolderString = userSelectedFolder.ValueOrFailure();
+            if (_modelRepositoryCollection.ModelRepositories.Any(x => x.DirectoryPath == userSelectedFolderString))
+            {
+                return;
+            }
+
             ModelViewModels.Clear();
 
-            var loadedModels = _modelsLoader.LoadAllModels(userSelectedFolder.ValueOrFailure());
+            var loadedModels = _modelsLoader.LoadAllModels(userSelectedFolderString);
             loadedModels.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
+
+            var modelRepository = new ModelRepository(
+                userSelectedFolderString,
+                loadedModels);
+
+            _modelRepositoryCollection.ModelRepositories.Add(modelRepository);
         }
 
         private async Task DisplaySelectedModel(ModelViewModel modelViewModel)

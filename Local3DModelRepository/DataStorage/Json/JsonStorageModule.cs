@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Local3DModelRepository.DataLoaders;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Local3DModelRepository.FileSystemAccess;
-using Local3DModelRepository.Models;
 using Newtonsoft.Json;
 using Optional;
 
@@ -45,45 +43,15 @@ namespace Local3DModelRepository.DataStorage.Json
             }
         }
 
-        public void Save(IModelRepositoryCollection modelRepositoryCollection)
+        public async ValueTask Save(IModelRepositoryCollection modelRepositoryCollection)
         {
-            /*
-            var modelsCollection = new MutableModelsRepository();
-            ////modelsCollection.Models = Models.Select(x => x as Model);
+            using var storageFileStream = _fileWrapper.Create(_filePath);
 
-            using var fileStream = File.OpenWrite(_filePath);
-            using var streamWriter = new StreamWriter(fileStream);
-            var serializer = new JsonSerializer();
-            serializer.Serialize(streamWriter, modelsCollection);
-            */
-        }
+            var modelRepoCollectionAsString = _jsonSeralizerWrapper.Serialize(modelRepositoryCollection);
+            var modelRepoCollectionAsByteArray = Encoding.UTF8.GetBytes(modelRepoCollectionAsString);
+            var modelRepoCollectionAsMemory = new ReadOnlyMemory<byte>(modelRepoCollectionAsByteArray);
 
-        public void Save(string repositoryName, IEnumerable<IModel> models)
-        {
-            /*
-            var modelsRepository = new ModelRepository(repositoryName, Enumerable.Empty<ITag>(), models);
-            using var fileStream = File.OpenWrite(_filePath);
-            using var streamWriter = new StreamWriter(fileStream);
-            var serializer = new JsonSerializer();
-            serializer.Serialize(streamWriter, modelsRepository);
-            */
-        }
-
-        private IModelRepository LoadModelsCollectionFromFile()
-        {
-            /*
-            var serializerSettings = new JsonSerializerSettings
-            {
-                Converters = { new ModelRepositoryJsonConverter() },
-            };
-
-            var serializer = JsonSerializer.Create(serializerSettings);
-            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            using var streamReader = new StreamReader(fileStream);
-            var jsonTextReader = new JsonTextReader(streamReader);
-            return serializer.Deserialize<ModelRepository>(jsonTextReader);
-            */
-            return null;
+            await storageFileStream.WriteAsync(modelRepoCollectionAsMemory, CancellationToken.None);
         }
     }
 }

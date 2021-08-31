@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31129.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Local3DModelRepository", "Local3DModelRepository\Local3DModelRepository.csproj", "{3DB5851E-70F1-40AC-BB86-A87A5ACC6221}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Local3DModelRepository.Tests", "Local3DModelRepository.Tests\Local3DModelRepository.Tests.csproj", "{083211B1-D82E-456B-A7CB-E2B04EE01813}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Local3DModelRepository.Tests", "Local3DModelRepository.Tests\Local3DModelRepository.Tests.csproj", "{083211B1-D82E-456B-A7CB-E2B04EE01813}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

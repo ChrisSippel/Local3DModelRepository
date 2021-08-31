@@ -9,8 +9,12 @@ namespace Local3DModelRepository
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly MainWindowViewModel _mainWindowViewModel;
+
         public MainWindow(MainWindowViewModel mainWindowViewModel)
         {
+            _mainWindowViewModel = mainWindowViewModel;
+
             InitializeComponent();
 
             DataContext = mainWindowViewModel;
@@ -20,14 +24,14 @@ namespace Local3DModelRepository
             Closing += MainWindow_Closing;
         }
 
-        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private async void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            throw new NotImplementedException();
+            await _mainWindowViewModel.SaveModelRepositoriesToStorage();
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            await ((MainWindowViewModel)DataContext).LoadExistingModelRespositories();
+            await _mainWindowViewModel.LoadModelRespositoriesFromStorage();
         }
 
         private void MainWindowViewModel_SelectedModelChanged(object sender, EventArgs e)

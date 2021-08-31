@@ -1,4 +1,5 @@
 ﻿using Optional;
+using System.Threading.Tasks;
 
 namespace Local3DModelRepository.DataStorage
 {
@@ -6,6 +7,6 @@ namespace Local3DModelRepository.DataStorage
     {
         Option<IModelRepositoryCollection> Load();
 
-        void Save(IModelRepositoryCollection modelRepositoryCollection);
+        ValueTask Save(IModelRepositoryCollection modelRepositoryCollection);
     }
 }

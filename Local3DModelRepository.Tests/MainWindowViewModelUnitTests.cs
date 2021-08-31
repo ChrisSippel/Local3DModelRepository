@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Local3DModelRepository.DataLoaders;
@@ -112,7 +113,7 @@ namespace Local3DModelRepository.Tests
                 .Returns(Option.None<IModelRepositoryCollection>());
 
             var mainWindowViewModel = CreateMainWindowViewModel();
-            await mainWindowViewModel.LoadExistingModelRespositories();
+            await mainWindowViewModel.LoadModelRespositoriesFromStorage();
             Assert.Empty(mainWindowViewModel.ModelViewModels);
         }
 
@@ -132,16 +133,29 @@ namespace Local3DModelRepository.Tests
             var modelRepositoryCollection = _mockRepository.Create<IModelRepositoryCollection>();
             modelRepositoryCollection
                 .SetupGet(x => x.ModelRepositories)
-                .Returns(new[] { modelRepository.Object });
+                .Returns(new List<IModelRepository> { modelRepository.Object });
 
             _storageModule
                 .Setup(x => x.Load())
                 .Returns(Option.Some(modelRepositoryCollection.Object));
 
             var mainWindowViewModel = CreateMainWindowViewModel();
-            await mainWindowViewModel.LoadExistingModelRespositories();
+            await mainWindowViewModel.LoadModelRespositoriesFromStorage();
             Assert.Single(mainWindowViewModel.ModelViewModels);
             Assert.Same(model.Object, mainWindowViewModel.ModelViewModels[0].Model);
+        }
+
+        [Fact]
+        public async Task SaveModelRepositories_SaveSuccessfully()
+        {
+            _storageModule
+                .Setup(x => x.Save(It.IsAny<IModelRepositoryCollection>()))
+                .Returns(ValueTask.CompletedTask);
+
+            var mainWindowViewModel = CreateMainWindowViewModel();
+            await mainWindowViewModel.SaveModelRepositoriesToStorage();
+
+            Assert.False(mainWindowViewModel.IsLoading);
         }
 
         private MainWindowViewModel CreateMainWindowViewModel()

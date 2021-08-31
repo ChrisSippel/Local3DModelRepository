@@ -3,5 +3,7 @@
     public interface IFileWrapper
     {
         bool Exists(string filePath);
+
+        IStreamWrapper Create(string path);
     }
 }
