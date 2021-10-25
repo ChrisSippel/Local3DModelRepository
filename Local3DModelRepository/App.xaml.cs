@@ -27,7 +27,6 @@ namespace Local3DModelRepository
 
         private void AddFeaturesToServiceCollection(IServiceCollection serviceCollection)
         {
-            var modelFactory = new ModelFactory();
             var fileWrapper = new FileWrapper();
             var jsonSerializerWrapper = new JsonSerializationWrapper();
 
@@ -40,8 +39,9 @@ namespace Local3DModelRepository
             serviceCollection.AddSingleton<IModelsLoader, ModelsLoader>();
             serviceCollection.AddSingleton<MainWindowViewModel>();
             serviceCollection.AddSingleton<MainWindow>();
-            serviceCollection.AddSingleton<IModelFactory>(modelFactory);
+            serviceCollection.AddSingleton<IModelFactory, ModelFactory>();
             serviceCollection.AddSingleton<IDialogService, DialogService>();
+            serviceCollection.AddSingleton<ITagsWindowViewModelFactory, TagsWindowViewModelFactory>();
         }
 
         protected override void OnStartup(StartupEventArgs e)

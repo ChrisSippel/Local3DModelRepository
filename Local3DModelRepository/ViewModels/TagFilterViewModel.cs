@@ -8,12 +8,12 @@ namespace Local3DModelRepository.ViewModels
     {
         private bool _isChecked;
 
-        public TagFilterViewModel(Tag tag)
+        public TagFilterViewModel(ITag tag)
             : this(tag, false)
         {
         }
 
-        public TagFilterViewModel(Tag tag, bool isChecked)
+        public TagFilterViewModel(ITag tag, bool isChecked)
         {
             _isChecked = isChecked;
 
@@ -21,7 +21,7 @@ namespace Local3DModelRepository.ViewModels
             Value = tag.Value;
         }
 
-        public Tag Tag { get; }
+        public ITag Tag { get; }
 
         public string Value { get; }
 

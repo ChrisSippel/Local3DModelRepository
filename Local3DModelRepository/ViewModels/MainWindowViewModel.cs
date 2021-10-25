@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Media3D;
 using HelixToolkit.Wpf;
+using Local3DModelRepository.Controls;
 using Local3DModelRepository.DataLoaders;
 using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.ExtensionMethods;
@@ -28,6 +30,7 @@ namespace Local3DModelRepository.ViewModels
         private readonly ModelImporter _modelImporter;
         private readonly IModelsLoader _modelsLoader;
         private readonly IDialogService _dialogService;
+        private readonly ITagsWindowViewModelFactory _tagsWindowViewModelFactory;
 
         private Model3DGroup _selectedModel;
         private bool _isLoading;
@@ -35,15 +38,18 @@ namespace Local3DModelRepository.ViewModels
         private IEnumerable<TagFilterViewModel> _excludeFilterTags;
 
         private IModelRepositoryCollection _modelRepositoryCollection;
+        private CancellationTokenSource _loadingModelCancellationTokenSource;
 
         public MainWindowViewModel(
             IStorageModule storageModule,
             IModelsLoader modelsLoader,
-            IDialogService dialogService)
+            IDialogService dialogService,
+            ITagsWindowViewModelFactory tagsWindowViewModelFactory)
         {
             _storageModule = storageModule;
             _modelsLoader = modelsLoader;
             _dialogService = dialogService;
+            _tagsWindowViewModelFactory = tagsWindowViewModelFactory;
 
             _isLoading = false;
             _modelImporter = new ModelImporter();
@@ -231,6 +237,10 @@ namespace Local3DModelRepository.ViewModels
 
         private async Task DisplaySelectedModel(ModelViewModel modelViewModel)
         {
+            _loadingModelCancellationTokenSource?.Cancel();
+            _loadingModelCancellationTokenSource?.Dispose();
+            _loadingModelCancellationTokenSource = new CancellationTokenSource();
+
             if (modelViewModel == null)
             {
                 SelectedModel = null;
@@ -247,7 +257,8 @@ namespace Local3DModelRepository.ViewModels
                     loadedModel.Freeze();
 
                     Application.Current.Dispatcher.Invoke(() => SelectedModel = loadedModel);
-                });
+                },
+                _loadingModelCancellationTokenSource.Token);
             }
             finally
             {
@@ -257,10 +268,11 @@ namespace Local3DModelRepository.ViewModels
 
         private void AddTagsToModel()
         {
-            /*
-            var viewModel = new TagsWindowViewModel(ModelViewModels.SelectMany(x => x.Model.Tags), SelectedModelViewModel.Model.Tags);
-            var tagsWindow = new TagsWindow(viewModel);
-            tagsWindow.ShowDialog();
+            var viewModel = _tagsWindowViewModelFactory.Create(
+                ModelViewModels.SelectMany(x => x.Model.Tags),
+                SelectedModelViewModel.Model.Tags);
+
+            _dialogService.ShowTagsDialog(viewModel);
 
             if (viewModel.SaveChanges)
             {
@@ -281,12 +293,18 @@ namespace Local3DModelRepository.ViewModels
                     }
                 });
 
-                ////_storageModule.Save();
+                _storageModule.Save(_modelRepositoryCollection);
             }
-            */
 
-            ////IncludeFilterTags = _storageModule.Models.SelectMany(x => x.Tags).Distinct().OrderBy(x => x.Value).Select(x => new TagFilterViewModel(x)).ToArray();
-            ////ExcludeFilterTags = _storageModule.Models.SelectMany(x => x.Tags).Distinct().OrderBy(x => x.Value).Select(x => new TagFilterViewModel(x)).ToArray();
+            var tagFilterViewModels = ModelViewModels
+                .SelectMany(x => x.Model.Tags)
+                .Distinct()
+                .OrderBy(x => x.Value)
+                .Select(x => new TagFilterViewModel(x))
+                .ToArray();
+
+            IncludeFilterTags = new List<TagFilterViewModel>(tagFilterViewModels);
+            ExcludeFilterTags = new List<TagFilterViewModel>(tagFilterViewModels);
         }
 
         private void RemoveTagsFromModel(object tagsAsObjects)

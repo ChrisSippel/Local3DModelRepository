@@ -1,4 +1,6 @@
-﻿using Optional;
+﻿using Local3DModelRepository.Controls;
+using Local3DModelRepository.ViewModels;
+using Optional;
 
 namespace Local3DModelRepository.UiTools
 {
@@ -12,5 +14,10 @@ namespace Local3DModelRepository.UiTools
         /// The full path to the folder the user selected.
         /// </returns>
         Option<string> HaveUserSelectFolder();
+
+        /// <summary>
+        /// Shows a <see cref="TagsWindow"/>, using the provided <see cref="ITagsWindowViewModel"/>.
+        /// </summary>
+        void ShowTagsDialog(ITagsWindowViewModel viewModel);
     }
 }

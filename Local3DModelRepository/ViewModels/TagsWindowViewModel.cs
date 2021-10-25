@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows;
 using System.Windows.Input;
 using Local3DModelRepository.Models;
+using Local3DModelRepository.UiTools;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 
@@ -15,24 +15,24 @@ namespace Local3DModelRepository.ViewModels
         private string _userAddedTags;
 
         public TagsWindowViewModel(
-            IEnumerable<Tag> possibleTags,
-            IEnumerable<Tag> modelTags)
+            IEnumerable<ITag> possibleTags,
+            IEnumerable<ITag> modelTags)
         {
             _userAddedTags = string.Empty;
 
-            PossibleTags = new ObservableCollection<Tag>(possibleTags.Distinct());
-            SelectedTags = new ObservableCollection<Tag>(modelTags);
+            PossibleTags = new ObservableCollection<ITag>(possibleTags.Distinct());
+            SelectedTags = new ObservableCollection<ITag>(modelTags);
 
-            CloseWithoutSavingCommand = new RelayCommand<Window>(CloseWithoutSavingCommandImpl);
-            CloseAndSaveCommand = new RelayCommand<Window>(CloseAndSaveCommandImpl);
+            CloseWithoutSavingCommand = new RelayCommand<IClosableWindow>(CloseWithoutSavingCommandImpl);
+            CloseAndSaveCommand = new RelayCommand<IClosableWindow>(CloseAndSaveCommandImpl);
             RemoveSelectedTag = new RelayCommand<object>(RemoveSelectedTagCommandImpl);
             AddSelectedTag = new RelayCommand<object>(AddSelectedTagCommandImpl);
             AddUserGivenTags = new RelayCommand(AddUserGivenTagsImpl);
         }
 
-        public ObservableCollection<Tag> PossibleTags { get; }
+        public ObservableCollection<ITag> PossibleTags { get; }
 
-        public ObservableCollection<Tag> SelectedTags { get; }
+        public ObservableCollection<ITag> SelectedTags { get; }
 
         public bool SaveChanges { get; private set; }
 
@@ -52,13 +52,13 @@ namespace Local3DModelRepository.ViewModels
 
         public ICommand AddUserGivenTags { get; }
 
-        private void CloseWithoutSavingCommandImpl(Window window)
+        private void CloseWithoutSavingCommandImpl(IClosableWindow window)
         {
             SaveChanges = false;
             window.Close();
         }
 
-        private void CloseAndSaveCommandImpl(Window window)
+        private void CloseAndSaveCommandImpl(IClosableWindow window)
         {
             SaveChanges = true;
             window.Close();

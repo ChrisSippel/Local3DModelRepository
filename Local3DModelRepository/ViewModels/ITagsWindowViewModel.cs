@@ -16,9 +16,9 @@ namespace Local3DModelRepository.ViewModels
 
         ICommand AddUserGivenTags { get; }
 
-        ObservableCollection<Tag> PossibleTags { get; }
+        ObservableCollection<ITag> PossibleTags { get; }
 
-        ObservableCollection<Tag> SelectedTags { get; }
+        ObservableCollection<ITag> SelectedTags { get; }
 
         bool SaveChanges { get; }
 

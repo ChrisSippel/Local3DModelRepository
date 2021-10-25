@@ -13,13 +13,14 @@ using Xunit;
 
 namespace Local3DModelRepository.Tests
 {
-    public sealed class MainModelViewModelFunctionalTests : IDisposable
+    public sealed class MainModelViewModelFunctionalTests
     {
         private readonly MockRepository _mockRepository;
 
         private readonly Mock<IStorageModule> _storageModule;
         private readonly Mock<IModelsLoader> _modelsLoader;
         private readonly Mock<IDialogService> _dialogService;
+        private readonly Mock<ITagsWindowViewModelFactory> _tagsWindowViewModelFactory;
 
         public MainModelViewModelFunctionalTests()
         {
@@ -28,18 +29,49 @@ namespace Local3DModelRepository.Tests
             _storageModule = _mockRepository.Create<IStorageModule>();
             _modelsLoader = _mockRepository.Create<IModelsLoader>();
             _dialogService = _mockRepository.Create<IDialogService>();
+            _tagsWindowViewModelFactory = _mockRepository.Create<ITagsWindowViewModelFactory>();
         }
 
-        public void Dispose()
+        /// <summary>
+        /// Ensure that we don't clear the already loaded models, if the user tries to load
+        /// a repository they've already added.
+        /// </summary>
+        [Fact]
+        public async Task LoadModelsFromStorage_LoadModelsFromFolder_AlreadyLoadedRepository()
         {
+            var directory = @"C:\NotARealDirectory";
+            var fileName = @"C:\NotARealFile.stl";
+
+            SetupLoadingModelFromStorage(directory, fileName);
+
+            _dialogService
+                .Setup(x => x.HaveUserSelectFolder())
+                .Returns(Option.Some(directory));
+
+            var mainWindowViewModel = CreateMainWindowViewModel();
+
+            await mainWindowViewModel.LoadModelRespositoriesFromStorage();
+            Assert.Single(mainWindowViewModel.ModelViewModels);
+            var expectedViewModel = mainWindowViewModel.ModelViewModels.First();
+
+            mainWindowViewModel.OpenFolderCommand.Execute(null);
+            Assert.Single(mainWindowViewModel.ModelViewModels);
+            Assert.Same(expectedViewModel, mainWindowViewModel.ModelViewModels.First());
+
             _mockRepository.VerifyAll();
         }
 
+        /// <summary>
+        /// Ensure that if models have already been loaded, but we then load a new repository
+        /// from a folder, we overwrite the previously loaded models with the ones from the folder.
+        /// </summary>
         [Fact]
         public async Task LoadModelsFromStorage_LoadModelsFromFolder_OnlyModelsFromFolder()
         {
+            const string repoDirectory = @"C:\MyRepo";
+
             const string modelFromStorageFileName = @"C:\NotARealFile1.stl";
-            var modelFromStorage = SetupLoadingModelFromStorage(modelFromStorageFileName).First();
+            var modelFromStorage = SetupLoadingModelFromStorage(repoDirectory, modelFromStorageFileName).First();
 
             const string modelFromFolderFileName = @"C:\NotARealFile2.stl";
             var modelFromFolder = SetupLoadingModelsFromFolder(modelFromFolderFileName).First();
@@ -49,14 +81,19 @@ namespace Local3DModelRepository.Tests
             Assert.Single(mainWindowViewModel.ModelViewModels);
             Assert.Same(modelFromStorage.Object, mainWindowViewModel.ModelViewModels[0].Model);
 
-            // Load models from folder
             mainWindowViewModel.OpenFolderCommand.Execute(null);
             Assert.Single(mainWindowViewModel.ModelViewModels);
             Assert.Same(modelFromFolder.Object, mainWindowViewModel.ModelViewModels[0].Model);
+
+            _mockRepository.VerifyAll();
         }
 
+        /// <summary>
+        /// Ensure that we can load models from a folder, save those models to a repository file, and then load
+        /// those same models files from the repository file.
+        /// </summary>
         [Fact]
-        private async Task LoadModelsFromFolder_SaveModelRepositoriesToStorage_LoadModelRespositoriesFromStorage_SameModelsLoaded()
+        public async Task LoadModelsFromFolder_SaveModelRepositoriesToStorage_LoadModelRespositoriesFromStorage_SameModelsLoaded()
         {
             const string modelFromFolderFileName = @"C:\NotARealFile.stl";
             var modelFromFolder = SetupLoadingModelsFromFolder(modelFromFolderFileName).First();
@@ -72,7 +109,7 @@ namespace Local3DModelRepository.Tests
                 .Setup(x => x.Save(It.Is<IModelRepositoryCollection>(y => expectedModelFoundFunc(y))))
                 .Returns(ValueTask.CompletedTask);
 
-            var modelFromStorage = SetupLoadingModelFromStorage(@"C:\NotARealFile2.stl");
+            var modelFromStorage = SetupLoadingModelFromStorage(null, @"C:\NotARealFile2.stl");
 
             var mainWindowViewModel = CreateMainWindowViewModel();
             Assert.Empty(mainWindowViewModel.ModelViewModels);
@@ -86,9 +123,11 @@ namespace Local3DModelRepository.Tests
             await mainWindowViewModel.LoadModelRespositoriesFromStorage();
             Assert.Equal(2, mainWindowViewModel.ModelViewModels.Count);
             Assert.Null(mainWindowViewModel.SelectedModel);
+
+            _mockRepository.VerifyAll();
         }
 
-        private List<Mock<IModel>> SetupLoadingModelFromStorage(params string[] modelFileNames)
+        private List<Mock<IModel>> SetupLoadingModelFromStorage(string repositoryDirectory, params string[] modelFileNames)
         {
             var modelsList = CreateModelsForFileNames(modelFileNames);
 
@@ -96,6 +135,13 @@ namespace Local3DModelRepository.Tests
             modelRepository
                 .SetupGet(x => x.Models)
                 .Returns(modelsList.Select(x => x.Object));
+
+            if (!string.IsNullOrWhiteSpace(repositoryDirectory))
+            {
+                modelRepository
+                    .SetupGet(x => x.DirectoryPath)
+                    .Returns(repositoryDirectory);
+            }
 
             var modelRepositoryCollection = _mockRepository.Create<IModelRepositoryCollection>();
             modelRepositoryCollection
@@ -146,7 +192,8 @@ namespace Local3DModelRepository.Tests
             return new MainWindowViewModel(
                 _storageModule.Object,
                _modelsLoader.Object,
-               _dialogService.Object);
+               _dialogService.Object,
+               _tagsWindowViewModelFactory.Object);
         }
     }
 }
