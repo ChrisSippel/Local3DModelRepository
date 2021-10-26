@@ -12,6 +12,7 @@
     <Window.Resources>
         <valueconverters:InverseBooleanConverter x:Key="inverseBooleanConverter" />
         <valueconverters:InvserseBooleanToCollapsedConverter x:Key="invserseBooleanToCollapsedConverter" />
+        <valueconverters:BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -51,7 +52,8 @@
                         <DataTemplate>
                             <CheckBox 
                                 IsChecked="{Binding IsChecked, Mode=TwoWay}"
-                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.IncludeFilterChanged}">
+                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.IncludeFilterChanged}"
+                                CommandParameter="{Binding Path=Value}">
                                     <TextBlock Text="{Binding Value}" />
                             </CheckBox>
                         </DataTemplate>
@@ -99,6 +101,11 @@
                         <TextBlock Text="{Binding DisplayText}" />
                     </DataTemplate>
                 </ListView.ItemTemplate>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource booleanToVisibilityConverter}}" />
+                    </Style>
+                </ListView.ItemContainerStyle>
             </ListView>
 
             <GridSplitter Grid.Column="1" Height="Auto" HorizontalAlignment="Stretch" />

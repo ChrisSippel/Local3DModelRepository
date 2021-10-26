@@ -9,7 +9,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Media3D;
 using HelixToolkit.Wpf;
-using Local3DModelRepository.Controls;
 using Local3DModelRepository.DataLoaders;
 using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.ExtensionMethods;
@@ -59,27 +58,14 @@ namespace Local3DModelRepository.ViewModels
             SelectionChangedCommand = new AsyncRelayCommand<ModelViewModel>(DisplaySelectedModel);
             AddTagsCommand = new RelayCommand(AddTagsToModel, () => !IsLoading && SelectedModel != null);
             RemoveTagsCommand = new RelayCommand<object>(RemoveTagsFromModel, (object o) => SelectedModel != null);
-            IncludeFilterChanged = new RelayCommand(IncludeFilterTagsChangedImpl);
+            IncludeFilterChanged = new RelayCommand<object>(IncludeFilterTagsChangedImpl);
             ExcludeFilterChanged = new RelayCommand(ExcludeFilterTagsChangedImpl);
 
             ModelViewModels = new ObservableCollection<ModelViewModel>();
             TagViewModels = new ObservableCollection<TagViewModel>();
 
-            /*_includeFilterTags = _storageModule.Models
-                .SelectMany(x => x.Tags)
-                .Distinct()
-                .OrderBy(x => x.Value)
-                .Select(x => new TagFilterViewModel(x))
-                .Prepend(IncludeAllTagFilterViewModel)
-                .ToArray();
-
-            _excludeFilterTags = _storageModule.Models
-                .SelectMany(x => x.Tags)
-                .Distinct()
-                .OrderBy(x => x.Value)
-                .Select(x => new TagFilterViewModel(x))
-                .ToArray();
-            */
+            _includeFilterTags = new[] { IncludeAllTagFilterViewModel };
+            _excludeFilterTags = Array.Empty<TagFilterViewModel>();
         }
 
         public event EventHandler SelectedModelChanged;
@@ -96,7 +82,7 @@ namespace Local3DModelRepository.ViewModels
 
         public RelayCommand FilterComboBoxSelectedItemChanged { get; }
 
-        public RelayCommand IncludeFilterChanged { get; }
+        public RelayCommand<object> IncludeFilterChanged { get; }
 
         public RelayCommand ExcludeFilterChanged { get; }
 
@@ -189,6 +175,8 @@ namespace Local3DModelRepository.ViewModels
                     var modelViewModels = modelRepository.Models.Select(x => new ModelViewModel(x)).ToArray();
                     modelViewModels.ForEach(x => ModelViewModels.Add(x));
                 }
+
+                UpdateFilterTags();
             }
             finally
             {
@@ -283,10 +271,7 @@ namespace Local3DModelRepository.ViewModels
                     {
                         TagViewModels.Add(new TagViewModel(x));
                     }
-                });
 
-                Array.ForEach(viewModel.SelectedTags.ToArray(), x =>
-                {
                     if (!SelectedModelViewModel.Model.Tags.Any(y => y.Equals(x)))
                     {
                         SelectedModelViewModel.Model.Tags.Add(x);
@@ -296,15 +281,7 @@ namespace Local3DModelRepository.ViewModels
                 _storageModule.Save(_modelRepositoryCollection);
             }
 
-            var tagFilterViewModels = ModelViewModels
-                .SelectMany(x => x.Model.Tags)
-                .Distinct()
-                .OrderBy(x => x.Value)
-                .Select(x => new TagFilterViewModel(x))
-                .ToArray();
-
-            IncludeFilterTags = new List<TagFilterViewModel>(tagFilterViewModels);
-            ExcludeFilterTags = new List<TagFilterViewModel>(tagFilterViewModels);
+            UpdateFilterTags();
         }
 
         private void RemoveTagsFromModel(object tagsAsObjects)
@@ -321,29 +298,21 @@ namespace Local3DModelRepository.ViewModels
                 TagViewModels.Remove(tagViewModel);
             }
 
-            ////_storageModule.Save();
+            _storageModule.Save(_modelRepositoryCollection);
 
-            /*IncludeFilterTags = _storageModule.Models
-                .SelectMany(x => x.Tags)
-                .Distinct()
-                .OrderBy(x => x.Value)
-                .Select(x => new TagFilterViewModel(x))
-                .Prepend(IncludeAllTagFilterViewModel)
-                .ToArray();*/
+            UpdateFilterTags();
         }
 
-        private void IncludeFilterTagsChangedImpl()
+        private void IncludeFilterTagsChangedImpl(object turnedOnFilterObject)
         {
-            /*
-            ModelViewModels.Clear();
-
             var filtersToEnforce = IncludeFilterTags.Where(x => x.IsChecked);
-            if (!filtersToEnforce.Any() ||
-                (filtersToEnforce.Count() == 1 &&
-                 filtersToEnforce.First().Equals(IncludeAllTagFilterViewModel)))
+            var turnedOnFilterString = (string)turnedOnFilterObject;
+            if (turnedOnFilterString == IncludeAllTagFilterViewModel.Tag.Value ||
+                !filtersToEnforce.Any())
             {
                 IncludeAllTagFilterViewModel.IsChecked = true;
-                IncludeFilterTags = _storageModule.Models
+                IncludeFilterTags = ModelViewModels
+                    .Select(x => x.Model)
                     .SelectMany(x => x.Tags)
                     .Distinct()
                     .OrderBy(x => x.Value)
@@ -351,48 +320,52 @@ namespace Local3DModelRepository.ViewModels
                     .Prepend(IncludeAllTagFilterViewModel)
                     .ToArray();
 
-                _storageModule.Models.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
+                ModelViewModels.ForEach(x => x.IsVisible = true);
                 return;
             }
-            else if (filtersToEnforce.Count() > 1)
-            {
-                IncludeAllTagFilterViewModel.IsChecked = false;
-            }
 
-            var modelsToDisplayHashSet = new HashSet<IModel>();
+            IncludeAllTagFilterViewModel.IsChecked = false;
+
+            var modelsToDisplayHashSet = new HashSet<ModelViewModel>();
             foreach (var filterToEnforce in filtersToEnforce)
             {
-                var modelsToDisplay = _storageModule.Models.Where(x => !modelsToDisplayHashSet.Contains(x) && x.Tags.Contains(filterToEnforce.Tag));
+                var modelsToDisplay =  ModelViewModels.Where(x => x.Model.Tags.Contains(filterToEnforce.Tag));
                 foreach (var modelToDisplay in modelsToDisplay)
                 {
                     modelsToDisplayHashSet.Add(modelToDisplay);
                 }
             }
 
-            modelsToDisplayHashSet.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
-            */
+            ModelViewModels.ForEach(x => x.IsVisible = modelsToDisplayHashSet.Contains(x));
         }
 
         private void ExcludeFilterTagsChangedImpl()
         {
-            /*
-            ModelViewModels.Clear();
-            _storageModule.Models.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
-
             var filtersToEnforce = ExcludeFilterTags.Where(x => x.IsChecked);
             var modelViewModelsToRemove = new HashSet<ModelViewModel>();
             foreach (var filterToEnforce in filtersToEnforce)
             {
                 ModelViewModels
-                    .Where(x => !modelViewModelsToRemove.Contains(x) && x.Model.Tags.Contains(filterToEnforce.Tag))
+                    .Where(x => x.Model.Tags.Contains(filterToEnforce.Tag))
                     .ForEach(x => modelViewModelsToRemove.Add(x));
             }
 
-            foreach (var modelToRemove in modelViewModelsToRemove)
-            {
-                ModelViewModels.Remove(modelToRemove);
-            }
-            */
+            ModelViewModels.ForEach(x => x.IsVisible = !modelViewModelsToRemove.Contains(x));
+        }
+
+        private void UpdateFilterTags()
+        {
+            var tagFilterViewModels = ModelViewModels
+                .SelectMany(x => x.Model.Tags)
+                .Distinct()
+                .OrderBy(x => x.Value)
+                .Select(x => new TagFilterViewModel(x))
+                .ToArray();
+
+            IncludeFilterTags = new List<TagFilterViewModel>(tagFilterViewModels);
+            IncludeFilterTags = IncludeFilterTags.Prepend(IncludeAllTagFilterViewModel);
+
+            ExcludeFilterTags = new List<TagFilterViewModel>(tagFilterViewModels);
         }
     }
 }

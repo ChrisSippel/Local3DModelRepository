@@ -22,7 +22,7 @@ namespace Local3DModelRepository.UiTools
         public void ShowTagsDialog(ITagsWindowViewModel viewModel)
         {
             var window = new TagsWindow(viewModel);
-            window.Show();
+            window.ShowDialog();
         }
     }
 }

@@ -175,14 +175,11 @@ namespace Local3DModelRepository.Tests
             var tagsList = new List<ITag>(tags.Select(x => new Tag(x)));
             var modelsList = CreateModelsForFileNames(modelFileNames);
 
-            if (tags.Any())
+            foreach (var model in modelsList)
             {
-                foreach (var model in modelsList)
-                {
-                    model
-                        .SetupGet(x => x.Tags)
-                        .Returns(tagsList);
-                }
+                model
+                    .SetupGet(x => x.Tags)
+                    .Returns(tagsList);
             }
 
             var modelRepository = _mockRepository.Create<IModelRepository>();
@@ -213,14 +210,11 @@ namespace Local3DModelRepository.Tests
         {
             var tagsList = new List<ITag>(tags.Select(x => new Tag(x)));
             var modelsList = CreateModelsForFileNames(modelFileNames);
-            if (tags.Any())
+            foreach (var model in modelsList)
             {
-                foreach (var model in modelsList)
-                {
-                    model
-                        .SetupGet(x => x.Tags)
-                        .Returns(tagsList);
-                }
+                model
+                    .SetupGet(x => x.Tags)
+                    .Returns(tagsList);
             }
 
             const string ModelFolder = @"C:\NotARealFolder";

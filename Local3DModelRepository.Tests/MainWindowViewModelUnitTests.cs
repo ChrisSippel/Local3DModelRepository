@@ -127,6 +127,9 @@ namespace Local3DModelRepository.Tests
             model
                 .SetupGet(x => x.FileName)
                 .Returns(@"C:\NotARealFile.stl");
+            model
+                .SetupGet(x => x.Tags)
+                .Returns(new List<ITag>());
 
             var modelRepository = _mockRepository.Create<IModelRepository>();
             modelRepository
