@@ -99,7 +99,7 @@ namespace Local3DModelRepository.Tests
         }
 
         [Fact]
-        public void SelectionChangedCommand_NullViewModel()
+        public void SelectionChangedCommand_NullViewModel_ExpectNullSelectedModel()
         {
             var mainModelViewModel = CreateMainWindowViewModel();
 
@@ -109,7 +109,7 @@ namespace Local3DModelRepository.Tests
         }
 
         [Fact]
-        public async Task LoadExistingModelRespositories_NoModelRepositoryCollection()
+        public async Task LoadExistingModelRespositories_NoModelRepositoryCollection_ExpectNoModelViewModels()
         {
             _storageModule
                 .Setup(x => x.Load())
@@ -121,7 +121,7 @@ namespace Local3DModelRepository.Tests
         }
 
         [Fact]
-        public async Task LoadExistingModelRespositories_ModelRepositoryCollectionExists()
+        public async Task LoadExistingModelRespositories_ModelRepositoryCollectionExists_ExpectModelViewModels()
         {
             var model = _mockRepository.Create<IModel>();
             model
@@ -162,14 +162,14 @@ namespace Local3DModelRepository.Tests
         }
 
         [Fact]
-        public void AddTagsCommand_NoSelectedModel_CantExecuteCommand()
+        public void AddTagsCommand_NoSelectedModel_CantExecuteCommand_ExpectCantExecute()
         {
             var mainWindowViewModel = CreateMainWindowViewModel();
             Assert.False(mainWindowViewModel.AddTagsCommand.CanExecute(new object()));
         }
 
         [Fact]
-        public void AddTagsCommand_NoExistingModelsLoaded_DontSaveChanges()
+        public void AddTagsCommand_NoExistingModelsLoaded_DontSaveChanges_ExpectEmptyTagFilters()
         {
             var modelTagsList = new List<ITag>();
 

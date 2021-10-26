@@ -42,7 +42,7 @@ namespace Local3DModelRepository.Tests
             var directory = @"C:\NotARealDirectory";
             var fileName = @"C:\NotARealFile.stl";
 
-            SetupLoadingModelFromStorage(directory, fileName);
+            SetupLoadingModelFromStorage(directory, new[] { fileName }, Array.Empty<string>());
 
             _dialogService
                 .Setup(x => x.HaveUserSelectFolder())
@@ -71,10 +71,10 @@ namespace Local3DModelRepository.Tests
             const string repoDirectory = @"C:\MyRepo";
 
             const string modelFromStorageFileName = @"C:\NotARealFile1.stl";
-            var modelFromStorage = SetupLoadingModelFromStorage(repoDirectory, modelFromStorageFileName).First();
+            var modelFromStorage = SetupLoadingModelFromStorage(repoDirectory, new[] { modelFromStorageFileName }, Array.Empty<string>()).First();
 
             const string modelFromFolderFileName = @"C:\NotARealFile2.stl";
-            var modelFromFolder = SetupLoadingModelsFromFolder(modelFromFolderFileName).First();
+            var modelFromFolder = SetupLoadingModelsFromFolder(new[] { modelFromFolderFileName }, Array.Empty<string>()).First();
 
             var mainWindowViewModel = CreateMainWindowViewModel();
             await mainWindowViewModel.LoadModelRespositoriesFromStorage();
@@ -96,7 +96,7 @@ namespace Local3DModelRepository.Tests
         public async Task LoadModelsFromFolder_SaveModelRepositoriesToStorage_LoadModelRespositoriesFromStorage_SameModelsLoaded()
         {
             const string modelFromFolderFileName = @"C:\NotARealFile.stl";
-            var modelFromFolder = SetupLoadingModelsFromFolder(modelFromFolderFileName).First();
+            var modelFromFolder = SetupLoadingModelsFromFolder(new[] { modelFromFolderFileName }, Array.Empty<string>()).First();
 
             var expectedModelFoundFunc = new Func<IModelRepositoryCollection, bool>((modelCollection) =>
             {
@@ -109,7 +109,7 @@ namespace Local3DModelRepository.Tests
                 .Setup(x => x.Save(It.Is<IModelRepositoryCollection>(y => expectedModelFoundFunc(y))))
                 .Returns(ValueTask.CompletedTask);
 
-            var modelFromStorage = SetupLoadingModelFromStorage(null, @"C:\NotARealFile2.stl");
+            SetupLoadingModelFromStorage(null, new[] { @"C:\NotARealFile2.stl" }, Array.Empty<string>());
 
             var mainWindowViewModel = CreateMainWindowViewModel();
             Assert.Empty(mainWindowViewModel.ModelViewModels);
@@ -127,9 +127,63 @@ namespace Local3DModelRepository.Tests
             _mockRepository.VerifyAll();
         }
 
-        private List<Mock<IModel>> SetupLoadingModelFromStorage(string repositoryDirectory, params string[] modelFileNames)
+        /// <summary>
+        /// Ensure that we can load models from a folder, save those models to a repository file, and then load
+        /// those same models files from the repository file.
+        /// </summary>
+        [Fact]
+        public async Task ApplyTagsToModel_SaveModelRepositoriesToStorage_LoadModelRespositoriesFromStorage_SameTagsLoaded()
         {
+            const string tagValue = "Hell_World";
+            const string modelFromFolderFileName = @"C:\NotARealFile.stl";
+            var modelFromFolder = SetupLoadingModelsFromFolder(new[] { modelFromFolderFileName }, new[] { tagValue }).First();
+
+            var expectedTagFoundFunc = new Func<IModelRepositoryCollection, bool>((modelCollection) =>
+            {
+                return
+                    modelCollection.ModelRepositories.Any(x =>
+                        x.Models.Any(y => y.Tags.Any(z => z.Value == tagValue)));
+            });
+
+            _storageModule
+                .Setup(x => x.Save(It.Is<IModelRepositoryCollection>(y => expectedTagFoundFunc(y))))
+                .Returns(ValueTask.CompletedTask);
+
+            SetupLoadingModelFromStorage(null, new[] { @"C:\NotARealFile2.stl" }, new[] { tagValue });
+
+            var mainWindowViewModel = CreateMainWindowViewModel();
+            Assert.Empty(mainWindowViewModel.ModelViewModels);
+
+            mainWindowViewModel.OpenFolderCommand.Execute(null);
+            Assert.Single(mainWindowViewModel.ModelViewModels);
+            Assert.Same(modelFromFolder.Object, mainWindowViewModel.ModelViewModels[0].Model);
+
+            await mainWindowViewModel.SaveModelRepositoriesToStorage();
+
+            await mainWindowViewModel.LoadModelRespositoriesFromStorage();
+            Assert.Equal(2, mainWindowViewModel.ModelViewModels.SelectMany(x => x.Model.Tags).Count());
+            Assert.Null(mainWindowViewModel.SelectedModel);
+
+            _mockRepository.VerifyAll();
+        }
+
+        private List<Mock<IModel>> SetupLoadingModelFromStorage(
+            string repositoryDirectory,
+            string[] modelFileNames,
+            string[] tags)
+        {
+            var tagsList = new List<ITag>(tags.Select(x => new Tag(x)));
             var modelsList = CreateModelsForFileNames(modelFileNames);
+
+            if (tags.Any())
+            {
+                foreach (var model in modelsList)
+                {
+                    model
+                        .SetupGet(x => x.Tags)
+                        .Returns(tagsList);
+                }
+            }
 
             var modelRepository = _mockRepository.Create<IModelRepository>();
             modelRepository
@@ -155,9 +209,19 @@ namespace Local3DModelRepository.Tests
             return modelsList;
         }
 
-        private List<Mock<IModel>> SetupLoadingModelsFromFolder(params string[] modelFileNames)
+        private List<Mock<IModel>> SetupLoadingModelsFromFolder(string[] modelFileNames, string[] tags)
         {
+            var tagsList = new List<ITag>(tags.Select(x => new Tag(x)));
             var modelsList = CreateModelsForFileNames(modelFileNames);
+            if (tags.Any())
+            {
+                foreach (var model in modelsList)
+                {
+                    model
+                        .SetupGet(x => x.Tags)
+                        .Returns(tagsList);
+                }
+            }
 
             const string ModelFolder = @"C:\NotARealFolder";
             _dialogService
