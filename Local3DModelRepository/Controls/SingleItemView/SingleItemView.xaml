@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="Local3DModelRepository.Controls.SingleItemView.SingleItemView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Local3DModelRepository.Controls.SingleItemView"
+             xmlns:controls="clr-namespace:Local3DModelRepository.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Grid Grid.Row="1">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Files list -->
+        <local:ModelListSingleItemView Grid.Column="0"/>
+
+        <GridSplitter Grid.Column="1" Height="Auto" HorizontalAlignment="Stretch" />
+
+        <!-- 3D viewer -->
+        <controls:ModelViewer Grid.Column="2" />
+
+        <GridSplitter Grid.Column="3" Height="Auto" HorizontalAlignment="Stretch" />
+
+        <local:TagsListSingleItemView Grid.Column="4" />
+    </Grid>
+</UserControl>

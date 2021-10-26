@@ -1,0 +1,92 @@
+﻿<UserControl x:Class="Local3DModelRepository.Controls.ModelViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Local3DModelRepository.Controls"
+             xmlns:h="http://helix-toolkit.org/wpf"
+             xmlns:valueconverters="clr-namespace:Local3DModelRepository.ValueConverters"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <valueconverters:InvserseBooleanToCollapsedConverter x:Key="invserseBooleanToCollapsedConverter" />
+    </UserControl.Resources>
+    
+    <Grid>
+        <h:HelixViewport3D
+                x:Name="ViewPort"
+                Grid.Column="2"
+                ZoomExtentsWhenLoaded="True">
+            <h:HelixViewport3D.Style>
+                <Style TargetType="h:HelixViewport3D">
+                    <Setter Property="Background" Value="{DynamicResource PreviewerBackground}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource PreviewerBackgroundLoading}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </h:HelixViewport3D.Style>
+            <h:DefaultLights />
+            <ModelVisual3D Content="{Binding SelectedModel}" />
+        </h:HelixViewport3D>
+
+        <Grid
+            Grid.Column="2"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"
+            Margin="5, 0, 0, 5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Image
+                    Height="32"
+                    Width="32"
+                    Grid.Column="0"
+                    Source="pack://application:,,,/Assets/RightButtonClicked.png" />
+            <TextBlock
+                    VerticalAlignment="Center"
+                    Width="Auto"
+                    Grid.Column="1"
+                    Text="Hold right mouse button to rotate" 
+                    Margin="0, 0, 10, 0"/>
+
+            <Image
+                    Height="32"
+                    Width="32"
+                    Grid.Column="2"
+                    Source="pack://application:,,,/Assets/MiddleButtonClicked.png" />
+            <TextBlock
+                    VerticalAlignment="Center"
+                    Width="Auto"
+                    Grid.Column="3"
+                    Text="Hold middle mouse button to move"
+                    Margin="0, 0, 10, 0"/>
+
+            <Image
+                    Height="32"
+                    Width="32"
+                    Grid.Column="4"
+                    Source="pack://application:,,,/Assets/MiddleButtonClicked.png" />
+            <TextBlock
+                    VerticalAlignment="Center"
+                    Width="Auto"
+                    Grid.Column="5"
+                    Text="Scroll middle mouse button to change zoom level"/>
+        </Grid>
+
+
+        <Label
+            Content="Loading..."
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            FontSize="30"
+            FontWeight="Bold"
+            Visibility="{Binding IsLoading, Converter={StaticResource invserseBooleanToCollapsedConverter}}" />
+    </Grid>
+</UserControl>

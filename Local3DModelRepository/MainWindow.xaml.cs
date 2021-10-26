@@ -36,7 +36,7 @@ namespace Local3DModelRepository
 
         private void MainWindowViewModel_SelectedModelChanged(object sender, EventArgs e)
         {
-            ViewPort.ZoomExtents();
+            ////ViewPort.ZoomExtents();
         }
     }
 }
