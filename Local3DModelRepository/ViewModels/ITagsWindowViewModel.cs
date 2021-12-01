@@ -1,15 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Local3DModelRepository.Models;
+using Local3DModelRepository.UiTools;
 
 namespace Local3DModelRepository.ViewModels
 {
-    public interface ITagsWindowViewModel
+    public interface ITagsWindowViewModel : ICloseableSaveableWindow
     {
-        ICommand CloseWithoutSavingCommand { get; }
-
-        ICommand CloseAndSaveCommand { get; }
-
         ICommand RemoveSelectedTag { get; }
 
         ICommand AddSelectedTag { get; }

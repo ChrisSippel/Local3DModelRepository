@@ -7,6 +7,8 @@
         xmlns:valueconverters="clr-namespace:Local3DModelRepository.ValueConverters"
         xmlns:controls="clr-namespace:Local3DModelRepository.Controls"
         xmlns:singleitemview="clr-namespace:Local3DModelRepository.Controls.SingleItemView"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        ui:WindowHelper.UseModernWindowStyle="True"
         Height="700"
         Width="1400"
         Title="Local 3D Model Repository"
@@ -19,63 +21,7 @@
         </Grid.RowDefinitions>
 
         <!-- Menu bar -->
-        <StackPanel Grid.Row="0" VerticalAlignment="Top">
-            <Menu Width="Auto" Height="20">
-                <MenuItem x:Name="OpenFolderMenuButton" Header="_Open Folder" HorizontalAlignment="Left" Width="Auto" Command="{Binding OpenFolderCommand}" />
-
-                <!-- TODO: Implement more themes in the future -->
-                <MenuItem x:Name="ThemesMenu" Header="_Themes" Visibility="Hidden">
-                    <MenuItem Header="Default" />
-                </MenuItem>
-            </Menu>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Label
-                    Grid.Column="0"
-                    Height="Auto"
-                    Width="Auto"
-                    Content="Filter" />
-                <ComboBox Text="{Binding TagsToIncludeInFilterText}"
-                          ItemsSource="{Binding IncludeFilterTags}"
-                          Grid.Column="1"
-                          IsReadOnly="True"
-                          IsEditable="true"
-                          Focusable="false"
-                          Margin="0, 0, 10, 0">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <CheckBox 
-                                IsChecked="{Binding IsChecked, Mode=TwoWay}"
-                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.IncludeFilterChanged}"
-                                CommandParameter="{Binding Path=Value}">
-                                    <TextBlock Text="{Binding Value}" />
-                            </CheckBox>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-
-                <ComboBox Text="{Binding TagsToExcludeInFilterText}"
-                          ItemsSource="{Binding ExcludeFilterTags}"
-                          Grid.Column="2"
-                          IsReadOnly="True"
-                          IsEditable="true"
-                          Focusable="false">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <CheckBox 
-                                IsChecked="{Binding IsChecked, Mode=TwoWay}"
-                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.ExcludeFilterChanged}">
-                                <TextBlock Text="{Binding Value}" />
-                            </CheckBox>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </Grid>
-        </StackPanel>
+        <controls:MenuBar Grid.Row="0" VerticalAlignment="Top" />
 
         <!-- Contents -->
         <singleitemview:SingleItemView Grid.Row="1" />

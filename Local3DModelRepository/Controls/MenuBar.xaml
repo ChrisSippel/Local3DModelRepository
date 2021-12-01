@@ -1,0 +1,68 @@
+﻿<UserControl x:Class="Local3DModelRepository.Controls.MenuBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Local3DModelRepository.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <StackPanel>
+        <Menu>
+            <MenuItem Header="Repositories">
+                <MenuItem Header="Add" Command="{Binding OpenFolderCommand}" />
+            </MenuItem>
+
+            <!-- TODO: Implement more themes in the future -->
+            <MenuItem x:Name="ThemesMenu" Header="_Themes" Visibility="Hidden">
+                <MenuItem Header="Default" />
+            </MenuItem>
+        </Menu>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Label
+                    Grid.Column="0"
+                    Height="Auto"
+                    Width="Auto"
+                    Content="Filter" />
+            <ComboBox Text="{Binding TagsToIncludeInFilterText}"
+                          ItemsSource="{Binding IncludeFilterTags}"
+                          Grid.Column="1"
+                          IsReadOnly="True"
+                          IsEditable="true"
+                          Focusable="false"
+                          Margin="0, 0, 10, 0">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox 
+                                IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.IncludeFilterChanged}"
+                                CommandParameter="{Binding Path=Value}">
+                            <TextBlock Text="{Binding Value}" />
+                        </CheckBox>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <ComboBox Text="{Binding TagsToExcludeInFilterText}"
+                          ItemsSource="{Binding ExcludeFilterTags}"
+                          Grid.Column="2"
+                          IsReadOnly="True"
+                          IsEditable="true"
+                          Focusable="false">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox 
+                                IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.ExcludeFilterChanged}">
+                            <TextBlock Text="{Binding Value}" />
+                        </CheckBox>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+    </StackPanel>
+</UserControl>

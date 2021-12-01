@@ -19,5 +19,10 @@ namespace Local3DModelRepository.UiTools
         /// Shows a <see cref="TagsWindow"/>, using the provided <see cref="ITagsWindowViewModel"/>.
         /// </summary>
         void ShowTagsDialog(ITagsWindowViewModel viewModel);
+
+        /// <summary>
+        /// Shows a <see cref="NewRepoWindow"/>, using the provided <see cref="INewRepoWindowViewModel"/>.
+        /// </summary>
+        void ShowNewRepoDialog(INewRepoWindowViewModel viewModel);
     }
 }

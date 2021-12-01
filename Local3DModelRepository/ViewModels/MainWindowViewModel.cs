@@ -199,6 +199,10 @@ namespace Local3DModelRepository.ViewModels
 
         private void LoadModelsFromFolder()
         {
+            var viewModel = new NewRepoWindowViewModel();
+            _dialogService.ShowNewRepoDialog(viewModel);
+
+            /*
             var userSelectedFolder = _dialogService.HaveUserSelectFolder();
             if (!userSelectedFolder.HasValue)
             {
@@ -217,10 +221,12 @@ namespace Local3DModelRepository.ViewModels
             loadedModels.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
 
             var modelRepository = new ModelRepository(
+                string.Empty,
                 userSelectedFolderString,
                 loadedModels);
 
             _modelRepositoryCollection.ModelRepositories.Add(modelRepository);
+            */
         }
 
         private async Task DisplaySelectedModel(ModelViewModel modelViewModel)

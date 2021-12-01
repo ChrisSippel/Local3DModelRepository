@@ -13,9 +13,15 @@ namespace Local3DModelRepository.UiTools
             var folderBrowserDialog = new VistaFolderBrowserDialog();
 
             var result = folderBrowserDialog.ShowDialog();
-            return result.HasValue
+            return result.HasValue && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath)
                 ? Option.Some(folderBrowserDialog.SelectedPath)
                 : Option.None<string>();
+        }
+
+        public void ShowNewRepoDialog(INewRepoWindowViewModel newRepoWindowViewModel)
+        {
+            var window = new NewRepoWindow(newRepoWindowViewModel);
+            window.ShowDialog();
         }
 
         /// <inheritdoc />

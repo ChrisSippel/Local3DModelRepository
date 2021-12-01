@@ -5,6 +5,8 @@ namespace Local3DModelRepository.DataStorage
 {
     public interface IModelRepository
     {
+        public string Name { get; }
+
         public string DirectoryPath { get; }
 
         public IEnumerable<IModel> Models { get; }

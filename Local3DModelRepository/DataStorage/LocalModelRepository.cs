@@ -3,15 +3,19 @@ using Local3DModelRepository.Models;
 
 namespace Local3DModelRepository.DataStorage
 {
-    public sealed class ModelRepository : IModelRepository
+    public sealed class LocalModelRepository : IModelRepository
     {
-        public ModelRepository(
+        public LocalModelRepository(
+            string name,
             string directoryPath,
             IEnumerable<IModel> models)
         {
+            Name = name;
             DirectoryPath = directoryPath;
             Models = models;
         }
+
+        public string Name { get; }
 
         public string DirectoryPath { get; }
 

@@ -2,18 +2,22 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Assets\cross_delete_remove_x_icon.png" />
+    <None Remove="Assets\folder.png" />
     <None Remove="Assets\MiddleButtonClicked.png" />
     <None Remove="Assets\RightButtonClicked.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\cross_delete_remove_x_icon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\folder.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\MiddleButtonClicked.png">
@@ -25,6 +29,7 @@
     <PackageReference Include="HelixToolkit.Wpf" Version="2.15.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.0.1" />
+    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
     <PackageReference Include="MvvmDialogs" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="3.1.0" />
@@ -40,6 +45,18 @@
 
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Controls\LocalRepositoryPage - Copy %282%29.xaml.cs">
+      <DependentUpon>LocalRepositoryPage.xaml.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\LocalRepositoryPage - Copy - Copy.xaml.cs">
+      <DependentUpon>LocalRepositoryPage - Copy.xaml.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\LocalRepositoryPage - Copy.xaml.cs">
+      <DependentUpon>LocalRepositoryPage.xaml.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

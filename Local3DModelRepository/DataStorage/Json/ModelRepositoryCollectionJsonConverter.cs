@@ -74,7 +74,7 @@ namespace Local3DModelRepository.DataStorage.Json
 
                 if (!string.IsNullOrWhiteSpace(directory))
                 {
-                    modelRepositories.Add(new ModelRepository(directory, models));
+                    modelRepositories.Add(new LocalModelRepository(string.Empty, directory, models));
                 }
             }
 
