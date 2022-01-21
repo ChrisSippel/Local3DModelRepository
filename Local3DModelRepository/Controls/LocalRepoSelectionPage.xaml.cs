@@ -7,6 +7,7 @@ using Local3DModelRepository.ViewModels;
 using Microsoft.Toolkit.Mvvm.Input;
 using Optional;
 using Optional.Unsafe;
+using System.IO;
 using Page = ModernWpf.Controls.Page;
 
 namespace Local3DModelRepository.Controls
@@ -30,6 +31,9 @@ namespace Local3DModelRepository.Controls
                 return;
             }
 
+            RepoLocationTextBox.Text = userSelectedFolder.ValueOr(string.Empty);
+            RepoNameTextBox.Text = Path.GetFileName(userSelectedFolder.ValueOr(string.Empty));
+
             var modelsLoader = new ModelsLoader(new ModelFactory(), new DirectoryWrapper());
             var userSelectedFolderString = userSelectedFolder.ValueOrFailure();
             var loadedModels = modelsLoader.LoadAllModels(userSelectedFolderString);
@@ -38,6 +42,11 @@ namespace Local3DModelRepository.Controls
             ((NewRepoWindowViewModel)DataContext).CanCreateNewRepo = true;
 
             ((RelayCommand<IClosableWindow>)((NewRepoWindowViewModel)DataContext).CloseAndSaveCommand).NotifyCanExecuteChanged();
+        }
+
+        private void RepoNameTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+
         }
     }
 }
