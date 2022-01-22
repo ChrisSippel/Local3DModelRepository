@@ -202,31 +202,16 @@ namespace Local3DModelRepository.ViewModels
             var viewModel = new NewRepoWindowViewModel();
             _dialogService.ShowNewRepoDialog(viewModel);
 
-            /*
-            var userSelectedFolder = _dialogService.HaveUserSelectFolder();
-            if (!userSelectedFolder.HasValue)
+            var modelRepo = viewModel.ModelRepsitory.ValueOr(() => null);
+            if (modelRepo == null)
             {
                 return;
             }
 
-            var userSelectedFolderString = userSelectedFolder.ValueOrFailure();
-            if (_modelRepositoryCollection.ModelRepositories.Any(x => x.DirectoryPath == userSelectedFolderString))
-            {
-                return;
-            }
+            var models = modelRepo.Models;
+            models.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
 
-            ModelViewModels.Clear();
-
-            var loadedModels = _modelsLoader.LoadAllModels(userSelectedFolderString);
-            loadedModels.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
-
-            var modelRepository = new ModelRepository(
-                string.Empty,
-                userSelectedFolderString,
-                loadedModels);
-
-            _modelRepositoryCollection.ModelRepositories.Add(modelRepository);
-            */
+            _modelRepositoryCollection.ModelRepositories.Add(modelRepo);
         }
 
         private async Task DisplaySelectedModel(ModelViewModel modelViewModel)
@@ -247,8 +232,7 @@ namespace Local3DModelRepository.ViewModels
             {
                 await Task.Run(() =>
                 {
-                    Model3DGroup loadedModel = _modelImporter.Load(modelViewModel.Model.FullPath);
-                    loadedModel.Freeze();
+                    Model3DGroup loadedModel = _modelImporter.Load(modelViewModel.Model.FullPath, freeze:true);
 
                     Application.Current.Dispatcher.Invoke(() => SelectedModel = loadedModel);
                 },

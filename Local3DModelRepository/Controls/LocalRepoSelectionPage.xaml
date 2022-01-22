@@ -9,15 +9,41 @@
       xmlns:ui="http://schemas.modernwpf.com/2019">
 
     <StackPanel>
-        <Button 
-            Content="Select directory"
-            Command="{Binding SelectRepoLocationCommand}"
-            HorizontalAlignment="Center"/>
+        <TextBlock
+            Text="Repo path"
+            Margin="10, 10, 10, 10"
+            Style="{StaticResource SubtitleTextBlockStyle}" />
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            
+            <TextBox
+                Grid.Column="0"
+                x:Name="RepoLocationTextBox"
+                IsReadOnly="True"
+                Margin="10, 10, 10, 10"
+                Width="Auto"/>
+
+            <Button
+                Grid.Column="1"
+                Content="Select"
+                Click="Button_Click"
+                HorizontalAlignment="Center"
+                Margin="0, 0, 10, 0"/>
+        </Grid>
+
+
+        <TextBlock
+            Text="Repo name (optional)"
+            Margin="10, 10, 10, 10"
+            Style="{StaticResource SubtitleTextBlockStyle}" />
 
         <TextBox
-            Text="{Binding RepositoryPath}"
-            Margin="10, 10, 10, 0"
-            HorizontalAlignment="Stretch"
-            IsReadOnly="True" />
+            x:Name="RepoNameTextBox"
+            Margin="10, 0, 10, 10"
+            TextChanged="RepoNameTextBox_TextChanged"/>
     </StackPanel>
 </ui:Page>
