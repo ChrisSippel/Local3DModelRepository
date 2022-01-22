@@ -8,6 +8,8 @@ namespace Local3DModelRepository.ViewModels
     {
         ICommand SelectRepoTypeCommand { get; }
 
+        INewRepoCreationWindowViewModel NewRepoCreationWindowViewModel { get; }
+
         event EventHandler<Type> NavigateForward;
 
         event EventHandler NavigateBackwards;

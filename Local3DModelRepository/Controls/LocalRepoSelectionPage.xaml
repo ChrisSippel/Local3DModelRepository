@@ -11,7 +11,13 @@
     <StackPanel>
         <Button 
             Content="Select directory"
-            Click="Button_Click"
+            Command="{Binding SelectRepoLocationCommand}"
             HorizontalAlignment="Center"/>
+
+        <TextBox
+            Text="{Binding RepositoryPath}"
+            Margin="10, 10, 10, 0"
+            HorizontalAlignment="Stretch"
+            IsReadOnly="True" />
     </StackPanel>
 </ui:Page>

@@ -1,13 +1,4 @@
-﻿using Local3DModelRepository.DataLoaders;
-using Local3DModelRepository.DataStorage;
-using Local3DModelRepository.FileSystemAccess;
-using Local3DModelRepository.Models;
-using Local3DModelRepository.UiTools;
-using Local3DModelRepository.ViewModels;
-using Microsoft.Toolkit.Mvvm.Input;
-using Optional;
-using Optional.Unsafe;
-using Page = ModernWpf.Controls.Page;
+﻿using Page = ModernWpf.Controls.Page;
 
 namespace Local3DModelRepository.Controls
 {
@@ -19,25 +10,6 @@ namespace Local3DModelRepository.Controls
         public LocalRepoSelectionPage()
         {
             InitializeComponent();
-        }
-
-        private void Button_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            var dialogService = new DialogService();
-            var userSelectedFolder = dialogService.HaveUserSelectFolder();
-            if (!userSelectedFolder.HasValue)
-            {
-                return;
-            }
-
-            var modelsLoader = new ModelsLoader(new ModelFactory(), new DirectoryWrapper());
-            var userSelectedFolderString = userSelectedFolder.ValueOrFailure();
-            var loadedModels = modelsLoader.LoadAllModels(userSelectedFolderString);
-            var modelRepository = new LocalModelRepository("Name", userSelectedFolderString, loadedModels);
-            ((NewRepoWindowViewModel)DataContext).ModelRepsitory = Option.Some<IModelRepository>(modelRepository);
-            ((NewRepoWindowViewModel)DataContext).CanCreateNewRepo = true;
-
-            ((RelayCommand<IClosableWindow>)((NewRepoWindowViewModel)DataContext).CloseAndSaveCommand).NotifyCanExecuteChanged();
         }
     }
 }

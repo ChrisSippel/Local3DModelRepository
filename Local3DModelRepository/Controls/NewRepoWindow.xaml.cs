@@ -37,6 +37,7 @@ namespace Local3DModelRepository.Controls
         private void NewRepoWindowViewModel_NavigateForward(object sender, Type e)
         {
             ContentFrame.Navigate(e, null, SlideInFromRightTransition);
+            ContentFrame.DataContext = ((INewRepoWindowViewModel)DataContext).NewRepoCreationWindowViewModel;
 
             var pushBackButtonLeftAnimation = new ThicknessAnimation
             {

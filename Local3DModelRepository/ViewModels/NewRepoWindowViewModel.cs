@@ -1,9 +1,7 @@
 ﻿using Local3DModelRepository.Controls;
-using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.Models;
 using Local3DModelRepository.UiTools;
 using Microsoft.Toolkit.Mvvm.Input;
-using Optional;
 using System;
 using System.Collections.Generic;
 using System.Windows.Input;
@@ -12,10 +10,10 @@ namespace Local3DModelRepository.ViewModels
 {
     public sealed class NewRepoWindowViewModel : INewRepoWindowViewModel
     {
-        private static readonly Dictionary<SupportedRepoTypes, Type> SupportedRepoTypeToPage =
-            new Dictionary<SupportedRepoTypes, Type>
+        private static readonly Dictionary<SupportedRepoTypes, (Type pageType, Type viewModelType)> SupportedRepoTypeToPage =
+            new Dictionary<SupportedRepoTypes, (Type pageType, Type viewModelType)>
         {
-            { SupportedRepoTypes.Local, typeof(LocalRepoSelectionPage) }
+            { SupportedRepoTypes.Local, (typeof(LocalRepoSelectionPage), typeof(LocalRepositoryViewModel)) },
         };
 
         private bool _atHomePage;
@@ -25,7 +23,7 @@ namespace Local3DModelRepository.ViewModels
             _atHomePage = true;
 
             CloseWithoutSavingCommand = new RelayCommand<IClosableWindow>(NavigateBackwardsImpl);
-            CloseAndSaveCommand = new RelayCommand<IClosableWindow>(CloseWindowAndSave, (closableWindow) => CanCreateNewRepo);
+            CloseAndSaveCommand = new RelayCommand<IClosableWindow>(CloseWindowAndSave, (closableWindow) => NewRepoCreationWindowViewModel != null && NewRepoCreationWindowViewModel.ModelRepsitory.HasValue);
             SelectRepoTypeCommand = new RelayCommand<SupportedRepoTypes>(SelectRepoTypeImpl);
         }
 
@@ -35,9 +33,9 @@ namespace Local3DModelRepository.ViewModels
 
         public ICommand SelectRepoTypeCommand { get; }
 
-        public Option<IModelRepository> ModelRepsitory { get; set; } = Option.None<IModelRepository>();
-
         public bool CanCreateNewRepo { get; set; } = false;
+
+        public INewRepoCreationWindowViewModel NewRepoCreationWindowViewModel { get; private set; }
 
         public event EventHandler<Type> NavigateForward;
 
@@ -58,6 +56,7 @@ namespace Local3DModelRepository.ViewModels
 
         private void CloseWindowAndSave(IClosableWindow window)
         {
+            NewRepoCreationWindowViewModel.PropertyChanged -= NewRepoCreationWindowViewModel_PropertyChanged;
             window.Close();
         }
 
@@ -65,7 +64,15 @@ namespace Local3DModelRepository.ViewModels
         {
             _atHomePage = false;
 
-            NavigateForward?.Invoke(this, SupportedRepoTypeToPage[selectedRepoType]);
+            var viewModel = Activator.CreateInstance(SupportedRepoTypeToPage[selectedRepoType].viewModelType);
+            NewRepoCreationWindowViewModel = (INewRepoCreationWindowViewModel)viewModel;
+            NewRepoCreationWindowViewModel.PropertyChanged += NewRepoCreationWindowViewModel_PropertyChanged;
+            NavigateForward?.Invoke(this, SupportedRepoTypeToPage[selectedRepoType].pageType);
+        }
+
+        private void NewRepoCreationWindowViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            ((RelayCommand<IClosableWindow>)CloseAndSaveCommand).NotifyCanExecuteChanged();
         }
     }
 }
