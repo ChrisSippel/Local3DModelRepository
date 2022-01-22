@@ -13,6 +13,7 @@ using Local3DModelRepository.DataLoaders;
 using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.ExtensionMethods;
 using Local3DModelRepository.Models;
+using Local3DModelRepository.Repositories.Creation;
 using Local3DModelRepository.UiTools;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
@@ -202,6 +203,7 @@ namespace Local3DModelRepository.ViewModels
             var viewModel = new NewRepoWindowViewModel();
             _dialogService.ShowNewRepoDialog(viewModel);
 
+            /*
             var modelRepo = viewModel.ModelRepsitory.ValueOr(() => null);
             if (modelRepo == null)
             {
@@ -212,6 +214,7 @@ namespace Local3DModelRepository.ViewModels
             models.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
 
             _modelRepositoryCollection.ModelRepositories.Add(modelRepo);
+            */
         }
 
         private async Task DisplaySelectedModel(ModelViewModel modelViewModel)

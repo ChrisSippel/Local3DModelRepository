@@ -1,13 +1,13 @@
-﻿<ui:Page
-      x:Class="Local3DModelRepository.Controls.NewRepoSelectionPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:Local3DModelRepository.Controls"
-      xmlns:models="clr-namespace:Local3DModelRepository.Models"
-      mc:Ignorable="d" 
-      xmlns:ui="http://schemas.modernwpf.com/2019">
+﻿<ui:Page 
+    x:Class="Local3DModelRepository.Repositories.Creation.NewRepoTypeSelectionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:Local3DModelRepository.Repositories.Creation"
+    xmlns:repositories="clr-namespace:Local3DModelRepository.Repositories"
+    mc:Ignorable="d" 
+    xmlns:ui="http://schemas.modernwpf.com/2019">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -30,7 +30,7 @@
             HorizontalAlignment="Center"
             Margin="10, 10, 10, 10"
             Command="{Binding SelectRepoTypeCommand}"
-            CommandParameter="{x:Static models:SupportedRepoTypes.Local}">
+            CommandParameter="{x:Static repositories:SupportedRepoTypes.Local}">
             <Button.Content>
                 <StackPanel
                         Orientation="Horizontal">

@@ -1,29 +1,25 @@
-﻿using Local3DModelRepository.Controls;
-using Local3DModelRepository.Models;
+﻿using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.UiTools;
 using Microsoft.Toolkit.Mvvm.Input;
+using Optional;
+using Optional.Unsafe;
 using System;
-using System.Collections.Generic;
 using System.Windows.Input;
 
-namespace Local3DModelRepository.ViewModels
+namespace Local3DModelRepository.Repositories.Creation
 {
     public sealed class NewRepoWindowViewModel : INewRepoWindowViewModel
     {
-        private static readonly Dictionary<SupportedRepoTypes, (Type pageType, Type viewModelType)> SupportedRepoTypeToPage =
-            new Dictionary<SupportedRepoTypes, (Type pageType, Type viewModelType)>
-        {
-            { SupportedRepoTypes.Local, (typeof(LocalRepoSelectionPage), typeof(LocalRepositoryViewModel)) },
-        };
-
         private bool _atHomePage;
+        private Option<INewRepoCreationPageViewModel> _newRepoCreationPageViewModel;
 
         public NewRepoWindowViewModel()
         {
             _atHomePage = true;
+            _newRepoCreationPageViewModel = Option.None<INewRepoCreationPageViewModel>();
 
             CloseWithoutSavingCommand = new RelayCommand<IClosableWindow>(NavigateBackwardsImpl);
-            CloseAndSaveCommand = new RelayCommand<IClosableWindow>(CloseWindowAndSave, (closableWindow) => NewRepoCreationWindowViewModel != null && NewRepoCreationWindowViewModel.ModelRepsitory.HasValue);
+            CloseAndSaveCommand = new RelayCommand<IClosableWindow>(CloseWindowAndSave, (closableWindow) => ModelRepository.HasValue);
             SelectRepoTypeCommand = new RelayCommand<SupportedRepoTypes>(SelectRepoTypeImpl);
         }
 
@@ -33,11 +29,11 @@ namespace Local3DModelRepository.ViewModels
 
         public ICommand SelectRepoTypeCommand { get; }
 
-        public bool CanCreateNewRepo { get; set; } = false;
+        public Option<IModelRepository> ModelRepository => _newRepoCreationPageViewModel.HasValue
+            ? _newRepoCreationPageViewModel.ValueOrFailure().ModelRepository
+            : Option.None<IModelRepository>();
 
-        public INewRepoCreationWindowViewModel NewRepoCreationWindowViewModel { get; private set; }
-
-        public event EventHandler<Type> NavigateForward;
+        public event EventHandler<(Type xamlPage, INewRepoCreationPageViewModel viewModel)> NavigateForward;
 
         public event EventHandler NavigateBackwards;
 
@@ -56,7 +52,11 @@ namespace Local3DModelRepository.ViewModels
 
         private void CloseWindowAndSave(IClosableWindow window)
         {
-            NewRepoCreationWindowViewModel.PropertyChanged -= NewRepoCreationWindowViewModel_PropertyChanged;
+            if (_newRepoCreationPageViewModel.HasValue)
+            {
+                _newRepoCreationPageViewModel.ValueOrFailure().PropertyChanged -= NewRepoCreationWindowViewModel_PropertyChanged;
+            }
+            
             window.Close();
         }
 
@@ -64,10 +64,10 @@ namespace Local3DModelRepository.ViewModels
         {
             _atHomePage = false;
 
-            var viewModel = Activator.CreateInstance(SupportedRepoTypeToPage[selectedRepoType].viewModelType);
-            NewRepoCreationWindowViewModel = (INewRepoCreationWindowViewModel)viewModel;
-            NewRepoCreationWindowViewModel.PropertyChanged += NewRepoCreationWindowViewModel_PropertyChanged;
-            NavigateForward?.Invoke(this, SupportedRepoTypeToPage[selectedRepoType].pageType);
+            var viewModel = Activator.CreateInstance(SupportedRepos.SupportedReposByType[selectedRepoType].ViewModel);
+            _newRepoCreationPageViewModel = Option.Some((INewRepoCreationPageViewModel)viewModel);
+            _newRepoCreationPageViewModel.ValueOrFailure().PropertyChanged += NewRepoCreationWindowViewModel_PropertyChanged;
+            NavigateForward?.Invoke(this, (SupportedRepos.SupportedReposByType[selectedRepoType].XamlPage, (INewRepoCreationPageViewModel)viewModel));
         }
 
         private void NewRepoCreationWindowViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

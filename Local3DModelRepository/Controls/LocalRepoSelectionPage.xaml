@@ -30,7 +30,7 @@
             <Button
                 Grid.Column="1"
                 Content="Select"
-                Click="Button_Click"
+                Command="{Binding SelectRepoLocationCommand}"
                 HorizontalAlignment="Center"
                 Margin="0, 0, 10, 0"/>
         </Grid>
@@ -43,7 +43,6 @@
 
         <TextBox
             x:Name="RepoNameTextBox"
-            Margin="10, 0, 10, 10"
-            TextChanged="RepoNameTextBox_TextChanged"/>
+            Margin="10, 0, 10, 10"/>
     </StackPanel>
 </ui:Page>

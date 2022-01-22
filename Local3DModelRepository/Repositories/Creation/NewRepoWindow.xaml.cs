@@ -1,12 +1,12 @@
-﻿using Local3DModelRepository.UiTools;
-using Local3DModelRepository.ViewModels;
+﻿using Local3DModelRepository.Controls;
+using Local3DModelRepository.UiTools;
 using ModernWpf.Media.Animation;
 using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media.Animation;
 
-namespace Local3DModelRepository.Controls
+namespace Local3DModelRepository.Repositories.Creation
 {
     /// <summary>
     /// Interaction logic for NewRepoWindow.xaml
@@ -31,13 +31,13 @@ namespace Local3DModelRepository.Controls
 
             DataContext = newRepoWindowViewModel;
 
-            ContentFrame.Navigate(typeof(NewRepoSelectionPage));
+            ContentFrame.Navigate(typeof(NewRepoTypeSelectionPage));
         }
 
-        private void NewRepoWindowViewModel_NavigateForward(object sender, Type e)
+        private void NewRepoWindowViewModel_NavigateForward(object sender, (Type xamlPage, INewRepoCreationPageViewModel viewModel) e)
         {
-            ContentFrame.Navigate(e, null, SlideInFromRightTransition);
-            ContentFrame.DataContext = ((INewRepoWindowViewModel)DataContext).NewRepoCreationWindowViewModel;
+            ContentFrame.Navigate(e.xamlPage, null, SlideInFromRightTransition);
+            ContentFrame.DataContext = e.viewModel;
 
             var pushBackButtonLeftAnimation = new ThicknessAnimation
             {
@@ -62,6 +62,7 @@ namespace Local3DModelRepository.Controls
         private void NewRepoWindowViewModel_NavigateBackwards(object sender, EventArgs e)
         {
             ContentFrame.GoBack();
+            ContentFrame.DataContext = sender;
 
             var pushBackButtonRightAnimation = new ThicknessAnimation
             {
