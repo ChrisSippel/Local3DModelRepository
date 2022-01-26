@@ -1,4 +1,4 @@
-﻿namespace Local3DModelRepository.DataStorage.Json
+namespace Local3DModelRepository.DataStorage.Json
 {
     public interface IJsonSeralizerWrapper
     {

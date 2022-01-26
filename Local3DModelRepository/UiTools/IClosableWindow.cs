@@ -1,4 +1,4 @@
-﻿namespace Local3DModelRepository.UiTools
+namespace Local3DModelRepository.UiTools
 {
     public interface IClosableWindow
     {

@@ -1,6 +1,6 @@
-﻿using Local3DModelRepository.Models;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
 using System;
+using Local3DModelRepository.Models;
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace Local3DModelRepository.ViewModels
 {
@@ -34,7 +34,7 @@ namespace Local3DModelRepository.ViewModels
         public bool Equals(TagFilterViewModel other)
         {
             return other != null &&
-                other.Value == Value;
+                   other.Value == Value;
         }
 
         public override bool Equals(object obj)
@@ -44,7 +44,7 @@ namespace Local3DModelRepository.ViewModels
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(IsChecked, Value, Tag);
+            return (IsChecked, Value, Tag).GetHashCode();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Local3DModelRepository.Models;
@@ -12,6 +12,20 @@ namespace Local3DModelRepository.DataStorage.Json
         public override bool CanRead { get; } = true;
 
         public override bool CanWrite { get; } = false;
+
+        private readonly IModelFactory _modelFactory;
+        private readonly ITagFactory _tagFactory;
+        private readonly IModelRepositoryCollectionFactory _modelRepositoryCollectionFactory;
+
+        public ModelRepositoryCollectionJsonConverter(
+            IModelFactory modelFactory,
+            ITagFactory tagFactory,
+            IModelRepositoryCollectionFactory modelRepositoryCollectionFactory)
+        {
+            _modelFactory = modelFactory;
+            _tagFactory = tagFactory;
+            _modelRepositoryCollectionFactory = modelRepositoryCollectionFactory;
+        }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
@@ -42,7 +56,7 @@ namespace Local3DModelRepository.DataStorage.Json
                 }
             }
 
-            return new ModelRepositoryCollection(tags, modelRepositories);
+            return _modelRepositoryCollectionFactory.Create(tags, modelRepositories);
         }
 
         private List<IModelRepository> ReadModelRepositories(JsonReader reader)
@@ -71,11 +85,6 @@ namespace Local3DModelRepository.DataStorage.Json
                         continue;
                     }
                 }
-
-                if (!string.IsNullOrWhiteSpace(directory))
-                {
-                    modelRepositories.Add(new LocalModelRepository(string.Empty, directory, models));
-                }
             }
 
             return modelRepositories;
@@ -92,7 +101,7 @@ namespace Local3DModelRepository.DataStorage.Json
                 var tagsToken = child.SelectToken("Tags");
                 var tags = ReadTagsFromToken(tagsToken);
 
-                models.Add(new Model(fullPath, fileName, tags));
+                models.Add( _modelFactory.Create(fullPath));
             }
 
             return models;
@@ -102,7 +111,7 @@ namespace Local3DModelRepository.DataStorage.Json
         {
             var values = token.Values();
             var tagsStrings = values.Values<string>();
-            var tagObjectsList = tagsStrings.Select(x => new Tag(x));
+            var tagObjectsList = tagsStrings.Select(x => _tagFactory.Create(x));
             return new List<ITag>(tagObjectsList);
         }
     }

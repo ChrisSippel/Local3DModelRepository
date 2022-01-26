@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Local3DModelRepository.Models;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 

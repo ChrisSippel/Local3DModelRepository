@@ -1,4 +1,4 @@
-﻿using Local3DModelRepository.Models;
+using Local3DModelRepository.Models;
 
 namespace Local3DModelRepository.ViewModels
 {

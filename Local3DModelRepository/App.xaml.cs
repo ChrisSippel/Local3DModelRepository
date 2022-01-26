@@ -1,11 +1,15 @@
-﻿using System.Windows;
-using Local3DModelRepository.DataLoaders;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using Local3DModelRepository.Api;
 using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.DataStorage.Json;
-using Local3DModelRepository.FileSystemAccess;
-using Local3DModelRepository.Models;
+using Local3DModelRepository.Repositories;
 using Local3DModelRepository.UiTools;
 using Local3DModelRepository.ViewModels;
+using Local3DModelRepository.Wrappers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Local3DModelRepository
@@ -20,28 +24,42 @@ namespace Local3DModelRepository
         public App()
         {
             var serviceCollection = new ServiceCollection();
-            AddFeaturesToServiceCollection(serviceCollection);
+            AddOtherAssemblyFeaturesToServiceCollection(serviceCollection);
+            AddLocalFeaturesToServiceCollection(serviceCollection);
 
             _serviceProvider = serviceCollection.BuildServiceProvider();
         }
 
-        private void AddFeaturesToServiceCollection(IServiceCollection serviceCollection)
+        private void AddOtherAssemblyFeaturesToServiceCollection(IServiceCollection serviceCollection)
         {
-            var fileWrapper = new FileWrapper();
-            var jsonSerializerWrapper = new JsonSerializationWrapper();
+            var dllsToLookAt = Directory.GetFiles(Directory.GetCurrentDirectory(), "Local3DModelRepository.*.dll", SearchOption.TopDirectoryOnly);
+            foreach (var dll in dllsToLookAt)
+            {
+                var dllAssembly = Assembly.LoadFile(dll);
+                var serviceLoaderTypes = dllAssembly.GetTypes().Where(x => x.GetInterfaces().Contains(typeof(IServiceLoader)));
+                foreach (var serviceLoaderType in serviceLoaderTypes)
+                {
+                    var serviceLoader = (IServiceLoader)Activator.CreateInstance(serviceLoaderType);
+                    serviceLoader.LoadServices(serviceCollection);
 
-            var jsonStoragerModule = new JsonStorageModule("Storage.json", fileWrapper, jsonSerializerWrapper);
+                }
+            }
+        }
 
-            serviceCollection.AddSingleton<IDirectoryWrapper, DirectoryWrapper>();
-            serviceCollection.AddSingleton<IJsonSeralizerWrapper>(jsonSerializerWrapper);
-            serviceCollection.AddSingleton<IFileWrapper>(fileWrapper);
-            serviceCollection.AddSingleton<IStorageModule>(jsonStoragerModule);
-            serviceCollection.AddSingleton<IModelsLoader, ModelsLoader>();
+        private void AddLocalFeaturesToServiceCollection(IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddSingleton<IStorageModule>(serviceProvider =>
+                new JsonStorageModule(
+                    "Storage.json",
+                    serviceProvider.GetService<IFileWrapper>(),
+                    serviceProvider.GetService<JsonSerializationWrapper>()));
+
+            serviceCollection.AddSingleton<ITagsWindowViewModelFactory, TagsWindowViewModelFactory>();
+            serviceCollection.AddSingleton<IDialogService, DialogService>();
+            serviceCollection.AddSingleton<IJsonSeralizerWrapper, JsonSerializationWrapper>();
             serviceCollection.AddSingleton<MainWindowViewModel>();
             serviceCollection.AddSingleton<MainWindow>();
-            serviceCollection.AddSingleton<IModelFactory, ModelFactory>();
-            serviceCollection.AddSingleton<IDialogService, DialogService>();
-            serviceCollection.AddSingleton<ITagsWindowViewModelFactory, TagsWindowViewModelFactory>();
+            serviceCollection.AddTransient<INewRepoTypeSelectionPageViewModel, NewRepoTypeSelectionPageViewModel>();
         }
 
         protected override void OnStartup(StartupEventArgs e)

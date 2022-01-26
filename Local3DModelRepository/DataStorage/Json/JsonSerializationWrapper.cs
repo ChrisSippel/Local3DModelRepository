@@ -1,14 +1,33 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
+using Local3DModelRepository.Models;
 using Newtonsoft.Json;
 
 namespace Local3DModelRepository.DataStorage.Json
 {
     public sealed class JsonSerializationWrapper : IJsonSeralizerWrapper
     {
+        private readonly IModelFactory _modelFactory;
+        private readonly ITagFactory _tagFactory;
+        private readonly IModelRepositoryCollectionFactory _modelRepositoryCollectionFactory;
+
+        public JsonSerializationWrapper(
+            IModelFactory modelFactory,
+            ITagFactory tagFactory,
+            IModelRepositoryCollectionFactory modelRepositoryCollectionFactory)
+        {
+            _modelFactory = modelFactory;
+            _tagFactory = tagFactory;
+            _modelRepositoryCollectionFactory = modelRepositoryCollectionFactory;
+        }
+
         public T DeserializeFromFile<T>(string filePath)
         {
-            var modelRepositoryJsonConverter = new ModelRepositoryCollectionJsonConverter();
+            var modelRepositoryJsonConverter = new ModelRepositoryCollectionJsonConverter(
+                _modelFactory,
+                _tagFactory,
+                _modelRepositoryCollectionFactory);
+
             var convertersList = new List<JsonConverter> { modelRepositoryJsonConverter };
             var jsonSettings = new JsonSerializerSettings()
             {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -13,11 +13,14 @@ namespace Local3DModelRepository.ViewModels
     public sealed class TagsWindowViewModel : ObservableObject, ITagsWindowViewModel
     {
         private string _userAddedTags;
+        private readonly ITagFactory _tagFactory;
 
         public TagsWindowViewModel(
+            ITagFactory tagFactory,
             IEnumerable<ITag> possibleTags,
             IEnumerable<ITag> modelTags)
         {
+            _tagFactory = tagFactory;
             _userAddedTags = string.Empty;
 
             PossibleTags = new ObservableCollection<ITag>(possibleTags.Distinct());
@@ -66,7 +69,7 @@ namespace Local3DModelRepository.ViewModels
 
         private void RemoveSelectedTagCommandImpl(object tagToRemove)
         {
-            if (tagToRemove is not Tag tag)
+            if (tagToRemove is not ITag tag)
             {
                 return;
             }
@@ -76,7 +79,7 @@ namespace Local3DModelRepository.ViewModels
 
         private void AddSelectedTagCommandImpl(object tagToAdd)
         {
-            if (tagToAdd is not Tag tag)
+            if (tagToAdd is not ITag tag)
             {
                 return;
             }
@@ -89,10 +92,10 @@ namespace Local3DModelRepository.ViewModels
 
         private void AddUserGivenTagsImpl()
         {
-            var tagStringsInArray = UserAddedTags.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+            var tagStringsInArray = UserAddedTags.Split(" ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             Array.ForEach(tagStringsInArray, x =>
             {
-                var tag = new Tag(x);
+                var tag = _tagFactory.Create(x);
                 if (!SelectedTags.Contains(tag))
                 {
                     SelectedTags.Add(tag);

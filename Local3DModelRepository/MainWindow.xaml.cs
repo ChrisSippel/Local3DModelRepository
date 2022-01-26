@@ -1,5 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 using Local3DModelRepository.ViewModels;
 
 namespace Local3DModelRepository
@@ -26,12 +38,12 @@ namespace Local3DModelRepository
 
         private async void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            await _mainWindowViewModel.SaveModelRepositoriesToStorage();
+            ////await _mainWindowViewModel.SaveModelRepositoriesToStorage();
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            await _mainWindowViewModel.LoadModelRespositoriesFromStorage();
+            ////await _mainWindowViewModel.LoadModelRespositoriesFromStorage();
         }
 
         private void MainWindowViewModel_SelectedModelChanged(object sender, EventArgs e)

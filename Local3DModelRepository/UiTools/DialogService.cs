@@ -1,27 +1,16 @@
-﻿using Local3DModelRepository.Controls;
-using Local3DModelRepository.Repositories.Creation;
+using Local3DModelRepository.Controls;
+using Local3DModelRepository.Repositories;
 using Local3DModelRepository.ViewModels;
-using Ookii.Dialogs.Wpf;
-using Optional;
 
 namespace Local3DModelRepository.UiTools
 {
     public sealed class DialogService : IDialogService
     {
-        /// <inheritdoc />
-        public Option<string> HaveUserSelectFolder()
+        public void ShowNewRepoDialog(
+            INewRepoWindowViewModel newRepoWindowViewModel,
+            INewRepoTypeSelectionPageViewModel newRepoTypeSelectionPageViewModel)
         {
-            var folderBrowserDialog = new VistaFolderBrowserDialog();
-
-            var result = folderBrowserDialog.ShowDialog();
-            return result.HasValue && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath)
-                ? Option.Some(folderBrowserDialog.SelectedPath)
-                : Option.None<string>();
-        }
-
-        public void ShowNewRepoDialog(INewRepoWindowViewModel newRepoWindowViewModel)
-        {
-            var window = new NewRepoWindow(newRepoWindowViewModel);
+            var window = new NewRepoWindow(newRepoWindowViewModel, newRepoTypeSelectionPageViewModel);
             window.ShowDialog();
         }
 

@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <UseWPF>true</UseWPF>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,49 +15,41 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\cross_delete_remove_x_icon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\folder.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Assets\MiddleButtonClicked.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="HelixToolkit.Wpf" Version="2.15.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
-    <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.0.1" />
-    <PackageReference Include="ModernWpfUI" Version="0.9.4" />
-    <PackageReference Include="MvvmDialogs" Version="8.0.0" />
+    <PackageReference Include="HelixToolkit.Wpf" Version="2.20.1" />
+    <PackageReference Include="HelixToolkit.Wpf.SharpDX" Version="2.20.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Ookii.Dialogs.Wpf" Version="3.1.0" />
     <PackageReference Include="Optional" Version="4.0.0" />
     <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\RightButtonClicked.png">
+    <Reference Include="ModernWpf, Version=0.9.4.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\..\.nuget\packages\modernwpfui\0.9.4\lib\net462\ModernWpf.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Local3DModelRepository.Models\Local3DModelRepository.Models.csproj" />
+    <ProjectReference Include="..\Local3DModelRepository.Repositories.Api\Local3DModelRepository.Repositories.Api.csproj" />
+    <ProjectReference Include="..\Local3DModelRepository.Repositories.Local\Local3DModelRepository.Repositories.Local.csproj" />
+    <ProjectReference Include="..\Local3DModelRepository.Wrappers\Local3DModelRepository.Wrappers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\cross_delete_remove_x_icon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\.editorconfig" Link=".editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Controls\LocalRepositoryPage - Copy %282%29.xaml.cs">
-      <DependentUpon>LocalRepositoryPage.xaml.cs</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\LocalRepositoryPage - Copy - Copy.xaml.cs">
-      <DependentUpon>LocalRepositoryPage - Copy.xaml.cs</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\LocalRepositoryPage - Copy.xaml.cs">
-      <DependentUpon>LocalRepositoryPage.xaml.cs</DependentUpon>
-    </Compile>
+    </Resource>
+    <Resource Include="Assets\folder.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\MiddleButtonClicked.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\RightButtonClicked.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Local3DModelRepository.Models;
 using Local3DModelRepository.UiTools;

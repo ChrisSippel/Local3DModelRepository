@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Local3DModelRepository.FileSystemAccess;
+using Local3DModelRepository.Models;
+using Local3DModelRepository.Wrappers;
 using Newtonsoft.Json;
 using Optional;
 
@@ -49,9 +50,8 @@ namespace Local3DModelRepository.DataStorage.Json
 
             var modelRepoCollectionAsString = _jsonSeralizerWrapper.Serialize(modelRepositoryCollection);
             var modelRepoCollectionAsByteArray = Encoding.UTF8.GetBytes(modelRepoCollectionAsString);
-            var modelRepoCollectionAsMemory = new ReadOnlyMemory<byte>(modelRepoCollectionAsByteArray);
 
-            await storageFileStream.WriteAsync(modelRepoCollectionAsMemory, CancellationToken.None);
+            await storageFileStream.WriteAsync(modelRepoCollectionAsByteArray, 0, modelRepoCollectionAsByteArray.Length, CancellationToken.None);
         }
     }
 }

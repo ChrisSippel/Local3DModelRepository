@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Local3DModelRepository.Models\Local3DModelRepository.Models.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="ModernWpfUI" Version="0.9.4" />
+      <PackageReference Include="Optional" Version="4.0.0" />
+    </ItemGroup>
+</Project>

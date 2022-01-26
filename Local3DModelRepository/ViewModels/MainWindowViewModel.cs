@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,11 +9,11 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Media3D;
 using HelixToolkit.Wpf;
-using Local3DModelRepository.DataLoaders;
 using Local3DModelRepository.DataStorage;
 using Local3DModelRepository.ExtensionMethods;
 using Local3DModelRepository.Models;
-using Local3DModelRepository.Repositories.Creation;
+using Local3DModelRepository.Repositories;
+using Local3DModelRepository.Repositories.Api;
 using Local3DModelRepository.UiTools;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
@@ -24,13 +24,13 @@ namespace Local3DModelRepository.ViewModels
 {
     public sealed class MainWindowViewModel : ObservableObject
     {
-        private static readonly TagFilterViewModel IncludeAllTagFilterViewModel = new TagFilterViewModel(new Tag("Include all tags"), true);
-
+        private readonly TagFilterViewModel _includeAllTagFilterViewModel;
         private readonly IStorageModule _storageModule;
         private readonly ModelImporter _modelImporter;
         private readonly IModelsLoader _modelsLoader;
         private readonly IDialogService _dialogService;
         private readonly ITagsWindowViewModelFactory _tagsWindowViewModelFactory;
+        private readonly IEnumerable<ISupportedRepoInformation> _supportedRepos;
 
         private Model3DGroup _selectedModel;
         private bool _isLoading;
@@ -44,16 +44,20 @@ namespace Local3DModelRepository.ViewModels
             IStorageModule storageModule,
             IModelsLoader modelsLoader,
             IDialogService dialogService,
-            ITagsWindowViewModelFactory tagsWindowViewModelFactory)
+            ITagsWindowViewModelFactory tagsWindowViewModelFactory,
+            ITagFactory tagFactory,
+            IEnumerable<ISupportedRepoInformation> supportedRepos)
         {
             _storageModule = storageModule;
             _modelsLoader = modelsLoader;
             _dialogService = dialogService;
             _tagsWindowViewModelFactory = tagsWindowViewModelFactory;
+            _supportedRepos = supportedRepos;
 
             _isLoading = false;
             _modelImporter = new ModelImporter();
-            _modelRepositoryCollection = new ModelRepositoryCollection();
+
+            _includeAllTagFilterViewModel = new TagFilterViewModel(tagFactory.Create("Include all tags"), true);
 
             OpenFolderCommand = new RelayCommand(LoadModelsFromFolder);
             SelectionChangedCommand = new AsyncRelayCommand<ModelViewModel>(DisplaySelectedModel);
@@ -65,7 +69,7 @@ namespace Local3DModelRepository.ViewModels
             ModelViewModels = new ObservableCollection<ModelViewModel>();
             TagViewModels = new ObservableCollection<TagViewModel>();
 
-            _includeFilterTags = new[] { IncludeAllTagFilterViewModel };
+            _includeFilterTags = new[] { _includeAllTagFilterViewModel };
             _excludeFilterTags = Array.Empty<TagFilterViewModel>();
         }
 
@@ -125,13 +129,13 @@ namespace Local3DModelRepository.ViewModels
         public bool IsLoading
         {
             get => _isLoading;
-            set 
-            { 
+            set
+            {
                 if (SetProperty(ref _isLoading, value))
                 {
                     AddTagsCommand.NotifyCanExecuteChanged();
                     RemoveTagsCommand.NotifyCanExecuteChanged();
-                } 
+                }
             }
         }
 
@@ -201,7 +205,8 @@ namespace Local3DModelRepository.ViewModels
         private void LoadModelsFromFolder()
         {
             var viewModel = new NewRepoWindowViewModel();
-            _dialogService.ShowNewRepoDialog(viewModel);
+            var viewModel2 = new NewRepoTypeSelectionPageViewModel(_supportedRepos);
+            _dialogService.ShowNewRepoDialog(viewModel, viewModel2);
 
             /*
             var modelRepo = viewModel.ModelRepsitory.ValueOr(() => null);
@@ -209,10 +214,8 @@ namespace Local3DModelRepository.ViewModels
             {
                 return;
             }
-
             var models = modelRepo.Models;
             models.ForEach(x => ModelViewModels.Add(new ModelViewModel(x)));
-
             _modelRepositoryCollection.ModelRepositories.Add(modelRepo);
             */
         }
@@ -300,24 +303,24 @@ namespace Local3DModelRepository.ViewModels
         {
             var filtersToEnforce = IncludeFilterTags.Where(x => x.IsChecked);
             var turnedOnFilterString = (string)turnedOnFilterObject;
-            if (turnedOnFilterString == IncludeAllTagFilterViewModel.Tag.Value ||
+            if (turnedOnFilterString == _includeAllTagFilterViewModel.Tag.Value ||
                 !filtersToEnforce.Any())
             {
-                IncludeAllTagFilterViewModel.IsChecked = true;
+                _includeAllTagFilterViewModel.IsChecked = true;
                 IncludeFilterTags = ModelViewModels
                     .Select(x => x.Model)
                     .SelectMany(x => x.Tags)
                     .Distinct()
                     .OrderBy(x => x.Value)
                     .Select(x => new TagFilterViewModel(x))
-                    .Prepend(IncludeAllTagFilterViewModel)
+                    .Prepend(_includeAllTagFilterViewModel)
                     .ToArray();
 
                 ModelViewModels.ForEach(x => x.IsVisible = true);
                 return;
             }
 
-            IncludeAllTagFilterViewModel.IsChecked = false;
+            _includeAllTagFilterViewModel.IsChecked = false;
 
             var modelsToDisplayHashSet = new HashSet<ModelViewModel>();
             foreach (var filterToEnforce in filtersToEnforce)
@@ -356,7 +359,7 @@ namespace Local3DModelRepository.ViewModels
                 .ToArray();
 
             IncludeFilterTags = new List<TagFilterViewModel>(tagFilterViewModels);
-            IncludeFilterTags = IncludeFilterTags.Prepend(IncludeAllTagFilterViewModel);
+            IncludeFilterTags = IncludeFilterTags.Prepend(_includeAllTagFilterViewModel);
 
             ExcludeFilterTags = new List<TagFilterViewModel>(tagFilterViewModels);
         }
